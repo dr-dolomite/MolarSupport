@@ -16,7 +16,7 @@ export const SubmitButton = ({
 }: SubmitButtonProps) => {
   const router = useRouter();
   const onClick = () => {
-    router.push("/accessment");
+    router.push("/result");
   };
 
   if (mode == "modal") {

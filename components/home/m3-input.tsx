@@ -92,7 +92,7 @@ const M3InputCard = () => {
   }
 
   return (
-    <div className="rounded-[16px] border-gray-500 border-dashed border-2 p-8 gap-y-16 flex flex-col justify-center items-center">
+    <div className="rounded-[16px] box p-8 py-12 gap-y-16 flex flex-col justify-center items-center">
       <form
         onDragEnter={handleDragEnter}
         onSubmit={(e) => e.preventDefault()}
@@ -119,11 +119,11 @@ const M3InputCard = () => {
               alt="input logo"
               className="size-20 cursor-pointer"
             />
-            <h1 className="text-[#878787] font-medium text-3xl text-center cursor-pointer">
+            <h1 className="text-[#878787] text-3xl font-bold text-center cursor-pointer">
               Drag & drop to upload the CBCT M3 Axial slice image
             </h1>
-            <div className="my-16">
-              <p className="text-[#878787] font-medium text-3xl text-center capitalize">
+            <div className="my-20">
+              <p className="text-[#878787] font-medium text-xl text-center capitalize">
                 No Files Selected
               </p>
             </div>
@@ -165,7 +165,7 @@ const M3InputCard = () => {
 
       <SubmitButton>
         <Button size="submitButton" variant="submitButton">
-          <RxMagnifyingGlass className="mr-2 size-8" /> Submit Assessment
+          <RxMagnifyingGlass className="mr-2 size-8" /> Start Assessment
         </Button>
       </SubmitButton>
     </div>

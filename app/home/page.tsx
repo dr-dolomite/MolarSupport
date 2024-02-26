@@ -6,8 +6,8 @@ import React from "react";
 
 const HomePage = () => {
   return (
-    <div className="px-44 py-24">
-        <div className="flex flex-row justify-center items-start space-x-16">
+    <div className="flex justfy-center items-center py-16 px-24">
+        <div className="flex flex-row justify-center items-center space-x-16">
           <div className="w-[60%] flex flex-col gap-y-8">
             <AboutCard />
             <ExampleCard />

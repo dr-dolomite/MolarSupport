@@ -1,6 +1,8 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
  
 @layer base {
   :root {
@@ -75,36 +77,55 @@
   }
 
   @font-face {
-    font-family: "Euclid Circular B";
+    font-family: "Nunito";
     font-weight: 300;
-    src: url("/fonts/Euclid Circular B Light.ttf") format("woff");
+    src: url("/fonts/Nunito/Nunito-Light.ttf") format("woff");
   }
 
   @font-face {
-    font-family: "Euclid Circular B";
+    font-family: "Nunito";
     font-weight: 400;
-    src: url("/fonts/Euclid Circular B Regular.ttf") format("woff");
+    src: url("/fonts/Nunito/Nunito-Regular.ttf") format("woff");
   }
 
   @font-face {
-    font-family: "Euclid Circular B";
+    font-family: "Nunito";
     font-weight: 500;
-    src: url("/fonts/Euclid Circular B Medium.ttf") format("woff");
+    src: url("/fonts/Nunito/Nunito-Medium.ttf") format("woff");
   }
 
   @font-face {
-    font-family: "Euclid Circular B";
+    font-family: "Nunito";
     font-weight: 600;
-    src: url("/fonts/Euclid Circular B SemiBold.ttf") format("woff");
+    src: url("/fonts/Nunito/Nunito-SemiBold.ttf") format("woff");
   }
 
   @font-face {
-    font-family: "Euclid Circular B";
+    font-family: "Nunito";
     font-weight: 700;
-    src: url("/fonts/Euclid Circular B Bold.ttf") format("woff");
+    src: url("/fonts/Nunito/Nunito-Bold.ttf") format("woff");
+  }
+
+  @font-face {
+    font-family: "Nunito";
+    font-weight: 800;
+    src: url("/fonts/Nunito/Nunito-ExtraBold.ttf") format("woff");
+  }
+
+  @font-face {
+    font-family: "Nunito";
+    font-weight: 900;
+    src: url("/fonts/Nunito/Nunito-Black.ttf") format("woff");
   }
 }
 
 body {
-  font-family: "Euclid Circular B", sans-serif;
+  font-family: "Nunito", sans-serif;
 }
+
+.box {
+  background-image: repeating-linear-gradient(-26deg, #757575, #757575 27px, transparent 27px, transparent 51px, #757575 51px), repeating-linear-gradient(64deg, #757575, #757575 27px, transparent 27px, transparent 51px, #757575 51px), repeating-linear-gradient(154deg, #757575, #757575 27px, transparent 27px, transparent 51px, #757575 51px), repeating-linear-gradient(244deg, #757575, #757575 27px, transparent 27px, transparent 51px, #757575 51px);
+  background-size: 2px 100%, 100% 2px, 2px 100% , 100% 2px;
+  background-position: 0 0, 0 0, 100% 0, 0 100%;
+  background-repeat: no-repeat;
+  }

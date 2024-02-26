@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
+import NavbarPage from "@/components/nav-bar";
+
 export const metadata: Metadata = {
   title: "Molar Support",
-  description: "An intelligent web application for evaluating M3-MC risk and relation.",
+  description:
+    "An intelligent web application for evaluating M3-MC risk and relation.",
 };
 
 export default function RootLayout({
@@ -13,7 +16,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <NavbarPage />
+        {children}
+      </body>
     </html>
   );
 }
