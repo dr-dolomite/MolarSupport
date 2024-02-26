@@ -20,21 +20,21 @@ const McInputCard = () => {
     // Use the Check CBT API Endpoint
     // If the file is not a CBCT, show an error message
     // If the file is a CBCT, show a success message
-  //   fetch("http://127.0.0.1:8000/check_mc", {
-  //     method: "POST",
-  //     body: e.target.files[0],
-  // })
-  //   .then((response) => response.json()) 
-  //   .then((data) => {
-  //     if ("error" in data) {
-  //       console.log(data.error);
-  //     } else {
-  //       console.log(data.success);
-  //     }
-  //   })
-  //   .catch((error) => {
-  //     console.error("Error:", error);
-  //   });
+    //   fetch("http://127.0.0.1:8000/check_mc", {
+    //     method: "POST",
+    //     body: e.target.files[0],
+    // })
+    //   .then((response) => response.json())
+    //   .then((data) => {
+    //     if ("error" in data) {
+    //       console.log(data.error);
+    //     } else {
+    //       console.log(data.success);
+    //     }
+    //   })
+    //   .catch((error) => {
+    //     console.error("Error:", error);
+    //   });
 
     showFileUploaded(true);
     showWaitingForFile(false);
@@ -67,7 +67,6 @@ const McInputCard = () => {
       showWaitingForFile(false);
     }
   }
-  
 
   function handleDragLeave(e: any) {
     e.preventDefault();
@@ -87,11 +86,9 @@ const McInputCard = () => {
     setDragActive(true);
   }
 
-  function removeFile(fileName: any, idx: any) {
-    const newArr = [...files];
-    newArr.splice(idx, 1);
-    setFiles([]);
-    setFiles(newArr);
+  function removeFile(fileName: any) {
+    const filteredFiles = files.filter((file: any) => file.name !== fileName);
+    setFiles(filteredFiles);
     showWaitingForFile(true);
     showFileUploaded(false);
   }
@@ -119,14 +116,14 @@ const McInputCard = () => {
       onDragLeave={handleDragLeave}
       onDragOver={handleDragOver}
     >
-      <Card className="bg-[#D7CEFF] hover:bg-[#D7CEFF]/80 border-2 border-[#6D58C6] py-8 px-16 cursor-pointer">
+      <Card className="bg-[#D7CEFF] hover:bg-[#D7CEFF]/80 border-2 border-[#6D58C6] py-6 px-8 cursor-pointer">
         {/* this input element allows us to select files for upload. We make it hidden so we can activate it when the user clicks select files */}
         <input
           placeholder="fileInput"
           className="hidden"
           ref={inputRef}
           type="file"
-          multiple={true}
+          multiple={false}
           onChange={handleChange}
           accept="image/*"
         />
@@ -141,30 +138,37 @@ const McInputCard = () => {
         )}
 
         {fileUploaded && (
-          <Card className="px-8 py-6">
-            {files.map((file: any, idx: any) => (
-              <div className="flex flex-col">
-                 <div key={idx} className="flex flex-row space-x-5">
-                <div className="w-[70%] flex flex-col gap-y-1 justify-center">
-                  <p className="text-[#1D1D1F] text-lg font-medium leading-tight truncate">
-                    {file.name}
-                  </p>
-                  <p className="text-[#929292] text-md font-medium leading-tight">
-                    {formatBytes(file.size)}
-                  </p>
-                </div>
+          <>
+            {files.map((file: any) => (
+              <Card
+                key={file.name}
+                className="flex flex-row gap-x-4 items-center px-6 py-4"
+              >
+                {/* Show the uploaded image */}
+                <img
+                  src={URL.createObjectURL(file)}
+                  alt="uploaded file"
+                  className="size-24 object-cover rounded-lg shadow-md drop-shadow-lg"
+                />
 
-                <div className="w-[30%] flex items-center justify-end">
+                <div className="flex flex-row flex-auto gap-x-4 items-center px-6 py-4">
+                  <div className="flex flex-col flex-auto gap-y-1">
+                    <p className="text-md font-medium truncate w-52">
+                      {file.name}
+                    </p>
+                    <p className="text-[#929292] text-sm font-medium leading-tight">
+                      {formatBytes(file.size)}
+                    </p>
+                  </div>
+                  
                   <FaRegTrashCan
-                    className="text-3xl text-red-400 hover:text-red-400/80 cursor-pointer"
-                    onClick={() => removeFile(file.name, idx)}
+                    className="text-2xl text-red-400 hover:text-red-400/80 cursor-pointer"
+                    onClick={() => removeFile(file.name)}
                   />
                 </div>
-              </div>
-              </div>
-             
+              </Card>
             ))}
-          </Card>
+          </>
         )}
       </Card>
     </form>

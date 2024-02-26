@@ -19,13 +19,13 @@ const buttonVariants = cva(
           "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
-        submitButton: "bg-[#6D58C6] hover:bg-[#6D58C6]/90 text-white text-3xl "
+        submitButton: "bg-[#6D58C6] hover:bg-[#6D58C6]/90 text-white lg:text-3xl text-lg "
       },
       size: {
         default: "h-9 px-4 py-2",
         sm: "h-8 rounded-md px-3 text-xs",
         lg: "h-10 rounded-md px-8",
-        submitButton: "rounded-[16px] px-6 py-6",
+        submitButton: "rounded-[16px] lg:px-6 lg:py-6 px-3 py-3",
         icon: "h-9 w-9",
       },
     },
