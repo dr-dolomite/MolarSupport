@@ -1,0 +1,174 @@
+"use client";
+
+import { Card } from "@/components/ui/card";
+import { FaArrowUpFromBracket } from "react-icons/fa6";
+import { useState, useRef } from "react";
+import { FaRegTrashCan } from "react-icons/fa6";
+import { date } from "zod";
+
+const McInputCard = () => {
+  const [dragActive, setDragActive] = useState<boolean>(false);
+  const inputRef = useRef<any>(null);
+  const [files, setFiles] = useState<any>([]);
+  const [waitingForFile, showWaitingForFile] = useState<boolean>(true);
+  const [fileUploaded, showFileUploaded] = useState<boolean>(false);
+
+  function handleChange(e: any) {
+    e.preventDefault();
+    console.log("File has been added");
+
+    // Use the Check CBT API Endpoint
+    // If the file is not a CBCT, show an error message
+    // If the file is a CBCT, show a success message
+  //   fetch("http://127.0.0.1:8000/check_mc", {
+  //     method: "POST",
+  //     body: e.target.files[0],
+  // })
+  //   .then((response) => response.json()) 
+  //   .then((data) => {
+  //     if ("error" in data) {
+  //       console.log(data.error);
+  //     } else {
+  //       console.log(data.success);
+  //     }
+  //   })
+  //   .catch((error) => {
+  //     console.error("Error:", error);
+  //   });
+
+    showFileUploaded(true);
+    showWaitingForFile(false);
+    if (e.target.files && e.target.files[0]) {
+      console.log(e.target.files);
+      for (let i = 0; i < e.target.files["length"]; i++) {
+        setFiles((prevState: any) => [...prevState, e.target.files[i]]);
+      }
+    }
+  }
+
+  function handleSubmitFile(e: any) {
+    if (files.length === 0) {
+      // no file has been submitted
+    } else {
+      // write submit logic here
+      //   showWaitingForFile(true);
+      //   showFileUploaded(false);
+    }
+  }
+
+  function handleDrop(e: any) {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      const droppedFiles = Array.from(e.dataTransfer.files);
+      setFiles((prevState: any) => [...prevState, ...droppedFiles]);
+      showFileUploaded(true);
+      showWaitingForFile(false);
+    }
+  }
+  
+
+  function handleDragLeave(e: any) {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+  }
+
+  function handleDragOver(e: any) {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(true);
+  }
+
+  function handleDragEnter(e: any) {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(true);
+  }
+
+  function removeFile(fileName: any, idx: any) {
+    const newArr = [...files];
+    newArr.splice(idx, 1);
+    setFiles([]);
+    setFiles(newArr);
+    showWaitingForFile(true);
+    showFileUploaded(false);
+  }
+
+  function openFileExplorer() {
+    inputRef.current.value = "";
+    inputRef.current.click();
+  }
+
+  // Function to calculate file size in MB
+  function formatBytes(bytes: number, decimals: number = 2) {
+    if (bytes === 0) return "0 Bytes";
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
+  }
+
+  return (
+    <form
+      onDragEnter={handleDragEnter}
+      onSubmit={(e) => e.preventDefault()}
+      onDrop={handleDrop}
+      onDragLeave={handleDragLeave}
+      onDragOver={handleDragOver}
+    >
+      <Card className="bg-[#D7CEFF] hover:bg-[#D7CEFF]/80 border-2 border-[#6D58C6] py-8 px-16 cursor-pointer">
+        {/* this input element allows us to select files for upload. We make it hidden so we can activate it when the user clicks select files */}
+        <input
+          placeholder="fileInput"
+          className="hidden"
+          ref={inputRef}
+          type="file"
+          multiple={true}
+          onChange={handleChange}
+          accept="image/*"
+        />
+        {waitingForFile && (
+          <div
+            className="flex flex-row justify-center items-center gap-x-4 cursor-pointer text-[#6D58C6]"
+            onClick={openFileExplorer}
+          >
+            <FaArrowUpFromBracket className="text-3xl" />
+            <p className="text-2xl font-medium">Upload CBCT Mandibular Canal</p>
+          </div>
+        )}
+
+        {fileUploaded && (
+          <Card className="px-8 py-6">
+            {files.map((file: any, idx: any) => (
+              <div className="flex flex-col">
+                 <div key={idx} className="flex flex-row space-x-5">
+                <div className="w-[70%] flex flex-col gap-y-1 justify-center">
+                  <p className="text-[#1D1D1F] text-lg font-medium leading-tight truncate">
+                    {file.name}
+                  </p>
+                  <p className="text-[#929292] text-md font-medium leading-tight">
+                    {formatBytes(file.size)}
+                  </p>
+                </div>
+
+                <div className="w-[30%] flex items-center justify-end">
+                  <FaRegTrashCan
+                    className="text-3xl text-red-400 hover:text-red-400/80 cursor-pointer"
+                    onClick={() => removeFile(file.name, idx)}
+                  />
+                </div>
+              </div>
+              </div>
+             
+            ))}
+          </Card>
+        )}
+      </Card>
+    </form>
+  );
+};
+
+export default McInputCard;
