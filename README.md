@@ -31,9 +31,9 @@ pip install -r requirements.txt
 
 Create the model folder
     
-    ```bash
-    mkdir modules/model_checkpoint
-    ```
+```bash
+mkdir modules/model_checkpoint
+```
 
 Paste the model checkpoints
 
@@ -65,3 +65,5 @@ uvicorn app:app --reload
 
 Rod Lester Moreno
 Russel Yasol
+
+## License
