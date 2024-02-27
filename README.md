@@ -75,8 +75,10 @@ uvicorn app:app --reload
 
 ## Contributing
 
-Rod Lester Moreno
-Russel Yasol
+- Rod Lester Moreno
+- Russel Yasol
+- Pio Lawrence Burgos
+- Melvin Saracin
 
 ## License
 [GNU AGPLv3](https://choosealicense.com/licenses/agpl-3.0/)
