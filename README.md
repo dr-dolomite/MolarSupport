@@ -21,6 +21,7 @@ npm install
 ### For Backend
 
 Make sure to have a WSL2 Ubuntu installed 
+
 <br/>
 
 Create a new virtual environment using Anaconda
