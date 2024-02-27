@@ -67,3 +67,4 @@ Rod Lester Moreno
 Russel Yasol
 
 ## License
+[GNU AGPLv3](https://choosealicense.com/licenses/agpl-3.0/)
