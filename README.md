@@ -6,6 +6,18 @@ This is a simple API that uses FastAPI and SQLite to store and retrieve data.
 
 ## Installation
 
+
+### For Frontend
+
+Make sure to have Node.js installed
+
+```bash
+npm install
+```
+
+
+### For Backend
+
 Make sure to have a WSL2 Ubuntu installed 
 
 Create a new virtual environment using Anaconda
