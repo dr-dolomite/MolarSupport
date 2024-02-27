@@ -117,9 +117,9 @@ const M3InputCard = () => {
             <img
               src="/logo/input-logo.svg"
               alt="input logo"
-              className="size-20 cursor-pointer"
+              className="size-24 cursor-pointer"
             />
-            <h1 className="text-[#878787] text-3xl font-bold text-center cursor-pointer">
+            <h1 className="text-[#878787] px-8 text-3xl font-bold text-center cursor-pointer">
               Drag & drop to upload the CBCT M3 Axial slice image
             </h1>
             <div className="my-20">

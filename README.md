@@ -1,37 +1,70 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# FastAPI router for the API with SQLite database
 
-## Getting Started
+This is a simple API that uses FastAPI and SQLite to store and retrieve data.
 
-First, run the development server:
+
+
+## Installation
+
+Make sure to have a WSL2 Ubuntu installed 
+
+Create a new virtual environment using Anaconda
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+conda create --name FASTAPI python=3.9 -y
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Activate the environment
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+```bash
+conda activate FASTAPI
+```
 
-## Learn More
 
-To learn more about Next.js, take a look at the following resources:
+Install the required packages
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+pip install -r requirements.txt
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
 
-## Deploy on Vercel
+Create the model folder
+    
+```bash
+mkdir modules/model_checkpoint
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Paste the model checkpoints
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
-# MolarSupport
+
+
+## Usage
+
+Run the API
+
+```bash
+uvicorn app:app --reload
+```
+
+
+
+## Changes
+
+- Ported to WSL2 Ubuntu
+- Used newer Tensorflow version available for Linux
+- Used Pytorch based on 12.1 CUDA
+- Merged Rod's changes for database handling
+- Removed id and changed it to generate session_id through cuid()
+- Added a new endpoint for getting a speficic case based on session_id
+- Removed unused values in the database
+
+
+
+## Contributing
+
+Rod Lester Moreno
+Russel Yasol
+
+## License
+[GNU AGPLv3](https://choosealicense.com/licenses/agpl-3.0/)
