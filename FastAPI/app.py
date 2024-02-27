@@ -40,21 +40,38 @@ from pydantic import BaseModel
 
 # REFERENCE: https://blog.stackademic.com/how-to-build-a-crud-api-using-fastapi-python-sqlite-for-new-coders-2d056333ea20
 
+#------------------ ROD CHANGES ------------------#
+
 # --- Create a Database with SQLite ---
 import sqlite3
+from datetime import datetime # concatenate with filenames
 
 # Class for the Molar Case
 class MolarCaseCreate(BaseModel):
-    mc_file_upload: str
-    m3_file_upload: str
-    original_m3_mask: str
-    m3_mask_prediction: str
-    layered_image: str
-    distance: float
-    image_with_distance: str
+    mc_filename: str
+    m3_filename: str
+    generated_m3_mask_filename: str
+    final_img_filename: str
     corticalization: str
     position: str
+    distance: str
+    final_image_distance: str
+    relation: str
     risk: str
+
+    # mc_file_upload: str
+    # m3_file_upload: str
+    # original_m3_mask: str
+    # m3_mask_prediction: str
+    # layered_image: str
+    # corticalization: str
+    # position: str
+    # distance: float
+    # image_with_distance: str
+    # relation: str
+    # risk: str
+
+    
 
 class MolarCase(MolarCaseCreate):
     id: int
@@ -69,36 +86,58 @@ def create_table(): # create table for molar cases
     cursor.execute("""
                 CREATE TABLE IF NOT EXISTS molarcases (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        mc_file_upload TEXT NOT NULL,
-                        m3_file_upload TEXT NOT NULL,
-                        distance FLOAT NOT NULL,
+                        mc_filename TEXT NOT NULL,
+                        m3_filename TEXT NOT NULL,
+                        generated_m3_mask_filename TEXT,
+                        final_img_filename TEXT NOT NULL,
                         corticalization TEXT NOT NULL,
                         position TEXT NOT NULL,
+                        distance FLOAT NOT NULL,
+                        final_image_distance TEXT NOT NULL,
+                        relation TEXT NOT NULL,
                         risk TEXT NOT NULL
                 );
                     """)
     connection.commit()
     connection.close()
 
-create_table() # call the function to create molarcases table
+create_table()
 
 def create_case(case: MolarCaseCreate): # (CRUD) Create molar case
     connection = create_connection()
     cursor = connection.cursor()
-    cursor.execute("INSERT INTO molarcases (mc_file_upload, m3_file_upload, distance, corticalization, position, risk) VALUES (?, ?, ?, ?, ?, ?)", 
-                   (case.mc_file_upload, case.m3_file_upload, case.distance, case.corticalization, case.position, case.risk))
+    cursor.execute("INSERT INTO molarcases (mc_filename, m3_filename, generated_m3_mask_filename, final_img_filename, corticalization, position, distance, final_image_distance, relation, risk) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 
+                   (case.mc_filename, case.m3_filename, case.generated_m3_mask_filename, case.final_img_filename, case.corticalization, case.position, case.distance, case.final_image_distance, case.relation, case.risk))
     connection.commit()
     connection.close()
 
+# Function to get all molar cases from the SQLite database
+def get_all_cases():
+    connection = create_connection()
+    cursor = connection.cursor()
+    cursor.execute("SELECT * FROM molarcases")
+    rows = cursor.fetchall()
+    connection.close()
+    return rows
+
+# Function to delete the molarcases table
+def delete_table():
+    connection = create_connection()
+    cursor = connection.cursor()
+    cursor.execute("DROP TABLE IF EXISTS molarcases")
+    connection.commit()
+    connection.close()
 
 # --------------- SQLITE AREA ---------------
+    
+#------------------ ROD CHANGES ------------------#
 
 # # Load the model for input classification
 # # model_input_check = load_model(os.path.join('model_checkpoint', 'inputClassification.h5'))
 # # model_corticilization_type = load_model(os.path.join('model_checkpoint', 'cortiClassification.h5'))
 # # model_position = load_model(os.path.join('model_checkpoint', 'vgg16_checkpoint.h5'))
 
-# # ------------------ Start of Segmentation Process Functions ------------------#
+# ------------------ Start of Segmentation Process Functions ------------------#
 # def preprocess_input(image_path):
 #     # Create CLAHE object
 #     output_folder = "preprocess_input"
@@ -315,7 +354,7 @@ def create_case(case: MolarCaseCreate): # (CRUD) Create molar case
 # #------------------ End of Segmentation Process Functions ------------------#
 
 
-# #------------------ Start of Classification Functions ------------------#
+# #- ----------------- Start of Classification Functions ------------------#
 
 # def classify_relation():
     
@@ -403,7 +442,6 @@ def create_case(case: MolarCaseCreate): # (CRUD) Create molar case
     
 #     return risk
 
-
 #------------------ End of Classification Functions ------------------#
 
     
@@ -420,15 +458,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# --------------- SQLITE AREA ---------------
-
-@app.post("/molarcases")
-def molarCases_endpoint(MolarCase: MolarCaseCreate):
-    molar_id = create_case(MolarCase)
-    return {"id": molar_id, **MolarCase.dict()}
-
-# --------------- SQLITE AREA ---------------
-
 
 #------------------ Start of Check for Valid CBCT input ------------------#
 from typing import Annotated    
@@ -438,7 +467,7 @@ if not os.path.exists("uploaded_images"):
     os.makedirs("uploaded_images")
 
 @app.post("/check_valid_cbct") # https://fastapi.tiangolo.com/tutorial/request-forms-and-files/
-async def check_valid_cbct(file: Annotated[bytes, File()], fileb: Annotated[UploadFile, File()] ):
+async def check_valid_cbct(fileb: Annotated[UploadFile, File()] ):
     # Save the uploaded image to a temporary file
     input_image_path = f"uploaded_images/{fileb.filename}"
     with open(input_image_path, "wb") as temp_image:
@@ -463,7 +492,7 @@ async def check_valid_cbct(file: Annotated[bytes, File()], fileb: Annotated[Uplo
 
 #------------------ Start of Checking for Valid MC CBCT Input------------------#
 @app.post("/check_valid_cbct_mc")
-async def check_valid_cbct(file: Annotated[bytes, File()], fileb: Annotated[UploadFile, File()] ):
+async def check_valid_cbct(fileb: Annotated[UploadFile, File()] ):
     # Save the uploaded image to a temporary file
     input_image_path = f"uploaded_images/{fileb.filename}"
     with open(input_image_path, "wb") as temp_image:
@@ -488,9 +517,10 @@ async def check_valid_cbct(file: Annotated[bytes, File()], fileb: Annotated[Uplo
     
 #------------------ Start of Process Image for Segmentation Prediction ------------------#
 @app.post("/process_image")
-async def process_image_endpoint(file: UploadFile = File(...)):
+async def process_image_endpoint(file: Annotated[UploadFile, File()] ):
     # Save the uploaded image to a temporary file
-    input_image_path = "temp_input_image.jpg"
+    # input_image_path = "temp_input_image.jpg"
+    input_image_path = file
     with open(input_image_path, "wb") as temp_image:
         temp_image.write(file.file.read())
     
@@ -543,8 +573,8 @@ async def get_result_image():
 #------------------ End of Process Image for Segmentation Prediction ------------------#
 
 #------------------ Start of Classification Endpoints ------------------#
-@app.post("/corticilization_type")
-async def corticilization_type():
+@app.post("/corticalization_type")
+async def corticalization_type(fileb: Annotated[UploadFile, File()] ):
     try:
         # Read the image from the specified path
         image_path = "output_assets/enhanced_output/enhanced.jpg"
@@ -576,10 +606,11 @@ async def corticilization_type():
         raise HTTPException(status_code=500, detail="Error processing corticilization_type")
 
 @app.post("/position_prediction")
-async def position():
+def position(file: Annotated[UploadFile, File()]):
     try:
         # Read the image from the specified path
-        image_path = "output_assets/enhanced_output/enhanced.jpg"
+        # image_path = "output_assets/enhanced_output/enhanced.jpg"
+        image_path = f"output_assets/enhanced_output/{file}"
         img = cv2.imread(image_path)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # Convert to RGB
         resize = tf.image.resize(img, (224,224))
@@ -630,7 +661,7 @@ async def position():
 
 #------------------ Start of Get Values ------------------#
 @app.get("/getDistance")
-async def read_excel_value():
+def read_excel_value():
 
     # Calculate distance between M3 and MC using Euclidean Distance formula
     def calculate_distance(point1, point2):
@@ -753,6 +784,8 @@ async def read_excel_value():
             
         # Save the updated DataFrame back to the Excel file
         df.to_excel("results.xlsx", index=False)
+
+        return min_distance
         
 
     detect_objects('output_assets/enhanced_output/enhanced.jpg')
@@ -827,7 +860,514 @@ async def read_excel_value():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 #------------------ End of Get Values ------------------#
+
+#------------------ ROD CHANGES ------------------#
+
+# FUNCTIONS
+
+# START FOR CHECK IF VALID CBCT IMAGE ------------------
+
+# params: image file
+# returns boolean True or False
+# Others: saves uploaded image if it is a valid CBCT image in /output_assets/uploaded_images/file_name.jpg
+
+def check_valid_cbct(file: Annotated[UploadFile, File()] ):
+    # Save the uploaded image to a temporary file
+    input_image_path = f"uploaded_images/{file.filename}"
+    with open(input_image_path, "wb") as temp_image:
+        temp_image.write(file.file.read())
+
+    # Check if the input image is a valid sliced CBCT input
+    img = cv2.imread(input_image_path)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # Convert to RGB
+    # resize = tf.image.resize(img, (256, 256))
+    # input_data = np.expand_dims(resize / 255, 0)
+    # prediction_input_check = model_input_check.predict(input_data)
+    prediction_input_check = 0.4
+
+    if prediction_input_check <= 0.5:
+        # return {"message": "The image is a valid sliced CBCT input."}
+        return True
+    else:
+        # Delete the file if the image is not a valid CBCT image
+        os.remove(input_image_path)
+        # return {"error": "The image is not a valid sliced CBCT input. Please upload a valid image."}
+        return False
+
+# END FOR CHECK IF VALID CBCT IMAGE ------------------
+    
+# START FOR PROCESSING CBCT IMAGE ------------------
+
+# params: image file
+# returns enhanced_output_path, flatten_output_path
+# Others: performs segmentation, preprocessing, and overlay then enhancing the image and saves it in /output_assets/enhanced_output/file_name.jpg
+def process_image(file: Annotated[UploadFile, File()] ):
+    # Save the uploaded image to a temporary file
+    # input_image_path = "temp_input_image.jpg"
+    input_image_path = file
+    with open(input_image_path, "wb") as temp_image:
+        temp_image.write(file.file.read())
+    
+    # Open the image again
+    img = cv2.imread(input_image_path)
+    
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # Convert to RGB
+    resize = tf.image.resize(img, (256, 256))
+    input_data = np.expand_dims(resize / 255, 0)
+    prediction_input_check = model_input_check.predict(input_data)
+
+    if prediction_input_check > 0.5:
+        return {"error": "The image is not a valid sliced CBCT input. Please upload a valid image."}
+
+    # Perform segmentation, preprocessing, and overlay
+    segmented_image = load_model_and_predict(input_image_path)
+    preprocess_image = process_image(segmented_image)
+    overlayed_image = overlay_images(preprocess_image, input_image_path)
+    final_result = overlay_result_mc(overlayed_image)
+    
+    # for debugging
+    print(f"Segmented Image: {segmented_image}")
+    print(f"Preprocessed Image: {preprocess_image}")
+    print(f"Overlayed Image: {overlayed_image}")
+    print(f"Final Result: {final_result}")
+    
+    enhanced_image = enhance_colors(final_result, saturation_factor=2.5)
+
+    # get current date and time
+    current_datetime = datetime.now().strftime("%Y-%m-%d %H-%M-%S")
+    str_current_datetime = str(current_datetime)
+
+    # create a file object along with extension
+    enhanced_output_path = "output_assets/enhanced_output/enhanced_result-"+str_current_datetime+".jpg"
+
+    # save the enchanced image
+    # enhanced_output_path = os.path.join("output_assets/enhanced_output/enhanced.jpg")
+    
+    cv2.imwrite(enhanced_output_path, enhanced_image)
+    
+    flat_violet_to_color(enhanced_output_path, (128, 47, 128))
+
+    # create a file object along with extension
+    flatten_output_path = "output_assets/enhanced_output/enhanced_finalResult-"+str_current_datetime+".jpg"
+
+    # flatten_output_path = os.path.join("output_assets/enhanced_output/enhancedFinal.jpg")
+    
+    # for debugging
+    print(f"Enhanced Image: {flatten_output_path}")
+    
+    # return FileResponse(flatten_output_path, media_type="image/jpeg", filename="result.jpg")
+    return enhanced_output_path, flatten_output_path
+
+
+# END FOR PROCESSING CBCT IMAGE ------------------
+
+# START FOR CORTICALIZATION TYPE ------------------
+
+# params: image file
+# returns interruption_prediction
+# Others:
+def corticalization_type(fileb: Annotated[UploadFile, File()] ):
+    try:
+        # Read the image from the specified path
+        image_path = "output_assets/enhanced_output/enhanced.jpg"
+        img = cv2.imread(image_path)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # Convert to RGB
+        resize = tf.image.resize(img, (256, 256))
+        input_data = np.expand_dims(resize / 255, 0)
+        prediction_corticilization_type = model_corticilization_type.predict(input_data)
+
+        if prediction_corticilization_type > 0.5:
+            interruption_prediction = "Positive"
+        else:
+            interruption_prediction = "Negative"
+        
+        # Read the existing Excel file into a DataFrame
+        # df = pd.read_excel("results.xlsx")
+
+        print(f"Prediction: {interruption_prediction}")
+        # # Append the new value to the "Interruption" column
+        # df.at[1, "Interruption"] = interruption_prediction
+        
+
+        # # Save the updated DataFrame back to the Excel file
+        # df.to_excel("results.xlsx", index=False)
+
+        # return {"postInterruption": interruption_prediction}
+        return interruption_prediction
+    except Exception as e:
+        print(f"Error in corticilization_type: {e}")
+        raise HTTPException(status_code=500, detail="Error processing corticilization_type")
+    
+# END FOR CORTICALIZATION TYPE ------------------
+
+# START FOR POSITION ------------------
+
+# params: image file
+# returns interruption_prediction
+# Others:
+def position(file: Annotated[UploadFile, File()]):
+    try:
+        # Read the image from the specified path
+        # image_path = "output_assets/enhanced_output/enhanced.jpg"
+        image_path = f"output_assets/enhanced_output/{file}"
+        img = cv2.imread(image_path)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # Convert to RGB
+        resize = tf.image.resize(img, (224,224))
+        yhat = model_position.predict(np.expand_dims(resize/255,0))
+        
+        # Find the index of the maximum value
+        predicted_label_index = np.argmax(yhat)
+        
+        # Define labels based on your class order
+        labels = ['apical', 'buccal', 'lingual', 'none']
+        
+        # Print the predicted label
+        predicted_label = labels[predicted_label_index]
+        print(predicted_label)
+        
+        if predicted_label == "apical":
+            position_label = "Apical"
+            
+        elif predicted_label == "buccal":
+            position_label = "Buccal"
+            
+        elif predicted_label == "lingual":
+            position_label = "Lingual"
+            
+        else:
+            position_label = "None"
+
+        # Read the existing Excel file into a DataFrame
+        df = pd.read_excel("results.xlsx")
+
+        # Append a new row to the DataFrame with the new value in the "Position" column
+        df.at[1, "Position"] = position_label
+
+        # Save the updated DataFrame back to the Excel file
+        df.to_excel("results.xlsx", index=False)
+        
+        classify_relation()
+        classify_risk()
+        
+        return {"postPosition": position_label}
+
+    except Exception as e:
+        print(f"Error in position: {e}")
+        raise HTTPException(status_code=500, detail="Error processing position")
+    
+# END FOR POSITION ------------------
+
+# START FOR DISTANCE ------------------
+
+# params: image file path
+# returns float value minimum distance
+# Others: saves image with distance overlay in /output_assets/distance_output/file_name.jpg
+
+# Calculate distance between M3 and MC using Euclidean Distance formula
+def calculate_distance(point1, point2):
+    return np.sqrt((point1[0] - point2[0])**2 + (point1[1] - point2[1])**2)
+
+'''
+- point1 and point2 are tuples representing the (x, y) coordinates of two points.
+- The function uses the Euclidean distance formula: distance = sqrt((x2 - x1)^2 + (y2 - y1)^2).
+'''
+
+def filter_color(image, lower, upper):
+    mask = cv2.inRange(image, lower, upper)
+    result = cv2.bitwise_and(image, image, mask=mask)
+    return result
+    
+def detect_objects(image_path):
+    # Load the image
+
+    #dimensions = (355, 355)
+
+    image = cv2.imread(image_path)
+
+    #image = cv2.resize(image, dimensions)
+
+    # Convert the image to HSV for better color segmentation
+    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+
+    # Define the lower and upper bounds for the purple color
+    lower_purple = np.array([130, 50, 50])
+    upper_purple = np.array([170, 255, 255])
+
+    # Define the lower and upper bounds for the green color
+    lower_green = np.array([40, 40, 40])
+    upper_green = np.array([80, 255, 255])
+
+    # Filter out purple and green regions
+    purple_regions = filter_color(hsv, lower_purple, upper_purple)
+    green_regions = filter_color(hsv, lower_green, upper_green)
+
+    # Combine the purple and green regions
+    combined_regions = cv2.bitwise_or(purple_regions, green_regions)
+
+    # Convert the combined image to grayscale
+    gray = cv2.cvtColor(combined_regions, cv2.COLOR_BGR2GRAY)
+
+    # Use a suitable method to detect objects, e.g., using contours
+    _, thresh = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
+    contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    # Sort contours based on the topmost point of each contour
+    contours = sorted(contours, key=lambda x: cv2.boundingRect(x)[1])
+
+    # Store points of each object in separate arrays
+    object_points = []
+    for contour in contours:
+        points = np.array(contour[:, 0, :])
+        object_points.append(points)
+
+    # Calculate the least Euclidean distance between points of the two objects (this should be the true distance)
+    min_distance = float('inf')
+    point_a_min = None
+    point_b_min = None
+    # for point_a in object_points[0]:
+    #     for point_b in object_points[1]:
+    #         distance = calculate_distance(tuple(point_a), tuple(point_b))
+    #         if distance < min_distance:
+    #             min_distance = distance
+    #             point_a_min = point_a
+    #             point_b_min = point_b
+    # Handle Exception
+    try:
+        for point_a in object_points[0]:
+            for point_b in object_points[1]:
+                distance = calculate_distance(tuple(point_a), tuple(point_b))
+                if distance < min_distance:
+                    min_distance = distance
+                    point_a_min = point_a
+                    point_b_min = point_b
+    except IndexError as e:
+        # print(f"An IndexError occurred: {e}")
+        min_distance = 0
+
+    # Display information about the detected objects
+    min_distance *= 0.15510299643
+    # print(min_distance - 2.7) # 8.462783060825256
+    # min_distance -= 8.462783060825256
+    min_distance = min_distance if min_distance > 0.5 else 0
+    min_distance = round(min_distance, 2)
+
+    # Draw a blue line connecting the closest points of the two objects
+    if point_a_min is not None and point_b_min is not None:
+        cv2.line(image, tuple(point_a_min), tuple(point_b_min), (255, 0, 0), 2)
+
+        # Display the value of min_distance on top of the line
+        text_position = ((point_a_min[0] + point_b_min[0]) // 2, (point_a_min[1] + point_b_min[1]) // 2)
+        cv2.putText(image, f"{min_distance:.2f} mm", text_position, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 3)
+
+    # get current date and time
+    current_datetime = datetime.now().strftime("%Y-%m-%d %H-%M-%S")
+    str_current_datetime = str(current_datetime)
+
+    # create a file object along with extension
+    file_name = "output_assets/distance_output/distance_result-"+str_current_datetime+".jpg"
+    cv2.imwrite(file_name, image)
+
+    return min_distance
+
+# END FOR DISTANCE ------------------
+
+# START FOR RELATION ------------------
+
+# params: distance, position, interruption values
+# returns relation classification
+# Others:
+def classify_relation(distance, position, interruption):
+    
+    # # load excel file in dataframe
+    # df = pd.read_excel("results.xlsx")
+    
+    # # get the values from the dataframe
+    # distance = df.at[1, "Distance"].astype(float)
+    # position = df.at[1, "Position"]
+    # interruption = df.at[1, "Interruption"]
+    
+    # If else statements for classification
+    
+    if distance == 0.0 and interruption == "Negative" and position == "None":
+        relation = "Class 0"
+        
+    elif position == "Buccal" or position == "Apical" and interruption == "Negative":
+        if distance > 2.0:
+            relation = "Class 1A"
+        else:
+            relation = "Class 1B"
+    
+    elif position == "Lingual" and interruption == "Negative":
+        if distance > 2.0:
+            relation = "Class 2A"
+        else:
+            relation = "Class 2B"
+    
+    elif position == "Buccal" or position == "Apical" and interruption == "Positive":
+       if distance > 1.0:
+           relation = "Class 3A"
+       else:
+           relation = "Class 3B"
+           
+    elif position == "Lingual" and interruption == "Positive":
+        if distance > 1.0:
+            relation = "Class 4A"
+        else:
+            relation = "Class 4B"
+    
+    else:
+        relation = "Unclassified Relation"
+    
+    print(f"Relation: {relation}")
+    
+    # # Append the new value to the "Relation" column
+    # df.at[1, "Relation"] = relation
+    
+    # # Save the updated DataFrame back to the Excel file
+    # df.to_excel("results.xlsx", index=False)
+    
+    return relation
+
+# END FOR RELATION ------------------
+
+# START FOR RISK ------------------
+
+# params: relation
+# returns risk classification
+# Others:
+def classify_risk(relation):
+    
+    # # load excel file in dataframe
+    # df = pd.read_excel("results.xlsx")
+    
+    # # get the values from the dataframe
+    # relation = df.at[1, "Relation"]
+    
+    # If else statements for classification
+    if relation == "Class 0":
+        risk = "N.0 (Non-determinant)"
+    
+    elif relation == "Class 1A" or relation == "Class 1B" or relation == "Class 2A" or relation == "Class 2B" or relation == "Class 4A":
+        risk = "N.1 (Low)"
+    
+    elif relation == "Class 3A" or relation == "Class 3B":
+        risk = "N.2 (Medium)"
+    
+    elif relation == "Class 4B":
+        risk = "N.3 (High)"
+    
+    else:
+        risk = "Unclassified Risk"
+    
+    print(f"Risk: {risk}")
+    
+    # # Append the new value to the "Risk" column
+    # df.at[1, "Risk"] = risk
+    
+    # # Save the updated DataFrame back to the Excel file
+    # df.to_excel("results.xlsx", index=False)
+    
+    return risk
+
+# END FOR RISK ------------------
+
+#------------------ Start of Main Driver ------------------#
+
+# params: image file paths for MC and M3
+# returns MolarCase class from the SQLite database
+# Others: saves image with distance overlay in /output_assets/distance_output/file_name.jpg
+
+@app.post("/mainMolarSupportDriver")
+async def root(
+    mc_img: Annotated[UploadFile, File()], # mandibular canal
+    m3_img: Annotated[UploadFile, File()] # mandibular third molar
+    ):
+# 1. Check if valid M3 and MC
+    text_result_11 = check_valid_cbct(mc_img)
+    if text_result_11 == False:
+        raise HTTPException(status_code=500, detail="Image is not an MC image.")
+    # text_result_11 = "path_to_mc_file"
+    text_result_12 = check_valid_cbct(m3_img)
+    if text_result_12 == False:
+        raise HTTPException(status_code=500, detail="Image is not an M3 image.")
+    # text_result_12 = "path_to_m3_file"
+# 2. Process image
+    # img_result_21 = process_image(m3_img)
+# 3. Corticalization
+    # text_result_31 = corticalization_type(img_result_21)
+    text_result_31 = False
+# 4. Position prediction
+    # text_result_41 = position(img_result_21)
+    text_result_41 = "Buccal"
+# 5. Distance measurement
+    # text_result_51 = detect_objects(img_result_21)
+    text_result_51 = 3.14
+# 6. Classify relation
+    text_result_61 = classify_relation(text_result_51, text_result_41, text_result_31)
+# 7. Classify risk
+    text_result_71 = classify_risk(text_result_61)
+# 8. Add to SQLite database
+    create_table() # call the function to create molarcases table
+
+    # Create a MolarCaseCreate instance
+    new_case = MolarCaseCreate(
+        mc_filename="path_to_mc_file",
+        m3_filename="path_to_m3_file",
+        generated_m3_mask_filename="path_to_original_m3_mask",
+        final_img_filename="path_to_m3_mask_prediction",
+        corticalization=False,
+        position="Buccal",
+        distance=3.14,
+        final_image_distance="path_to_image_with_distance",
+        relation=text_result_61,
+        risk=text_result_71
+    )
+
+    create_case(new_case)
+
+    # return a MolarCase:
+    # [mc_file_upload, m3_file_upload, original_m3_mask, m3_mask_prediction, layered_image, corticalization, position, distance, image_with_distance, relation, risk]
+    # print("Done.")
+    print(new_case)
+    return f"Done. \n {new_case}"
+
+# REFER HERE FOR THE IMPORTANT DETAILS TO RETURN AND DISPLAY
+# Class for the Molar Case
+# class MolarCaseCreate(BaseModel):
+#     mc_file_upload: str
+#     m3_file_upload: str
+#     original_m3_mask: str
+#     m3_mask_prediction: str
+#     layered_image: str
+#     corticalization: str
+#     position: str
+#     distance: float
+#     image_with_distance: str
+#     relation: str
+#     risk: str\
+
+from typing import List
+
+# GET ENDPOINT FOR SHOWING ALL ENTRIES IN SQLITE DATABASE
+@app.get("/molarcases/", response_model=List[MolarCase])
+async def get_molar_cases():
+    cases = get_all_cases()
+    return [{"id": row[0], "mc_filename": row[1], "m3_filename": row[2], "generated_m3_mask_filename": row[3],
+             "final_img_filename": row[4], "corticalization": row[5], "position": row[6],
+             "distance": row[7], "final_image_distance": row[8], "relation": row[9], "risk": row[10]} for row in cases]
+
+# DELETE endpoint to delete the molarcases table
+@app.delete("/molarcases/table")
+async def delete_molarcases_table():
+    delete_table()
+    return {"message": "molarcases table deleted successfully"}
+
+#------------------ End of Main Driver ------------------#
+
+#------------------ ROD CHANGES ------------------#
     
 if __name__ == '__main__':
     app.run()
