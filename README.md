@@ -1,11 +1,12 @@
-# FastAPI router for the API with SQLite database
+# Molar Support Frontend and Backend
 
-This is a simple API that uses FastAPI and SQLite to store and retrieve data.
+This is a simple web application that uses machine learning models to do segmentations, classifications, and predictions on CBCT slice images of M3 and MC to assess the risk based on Maliogne's classification. The frontend is built using NextJS and the backend is built using FastAPI. The machine learning models are built using Tensorflow and Pytorch.
 
-
+<br/> <br/>
 
 ## Installation
 
+<br/>
 
 ### For Frontend
 
@@ -15,6 +16,7 @@ Make sure to have Node.js installed
 npm install
 ```
 
+<br/>
 
 ### For Backend
 
@@ -49,7 +51,7 @@ mkdir modules/model_checkpoint
 
 Paste the model checkpoints
 
-
+<br/><br/>
 
 ## Usage
 
@@ -59,7 +61,7 @@ Run the API
 uvicorn app:app --reload
 ```
 
-
+<br/><br/>
 
 ## Changes
 
@@ -71,7 +73,7 @@ uvicorn app:app --reload
 - Added a new endpoint for getting a speficic case based on session_id
 - Removed unused values in the database
 
-
+<br/><br/>
 
 ## Contributing
 
@@ -79,6 +81,8 @@ uvicorn app:app --reload
 - Russel Yasol
 - Pio Lawrence Burgos
 - Melvin Saracin
+
+<br/>
 
 ## License
 [GNU AGPLv3](https://choosealicense.com/licenses/agpl-3.0/)
