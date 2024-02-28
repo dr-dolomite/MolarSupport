@@ -1,7 +1,8 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# model checkpoints
+# model checkpoints & session images
 /FastAPI/modules/model_checkpoint
+/FastAPI/session_output_images
 
 # dependencies
 /node_modules

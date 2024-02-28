@@ -125,8 +125,7 @@ const McInputCard = () => {
       {showErorModal && (
         <ErrorModal
           onClose={closeErrorModal}
-          error="Image upload was not 
-CBCT MC slice Image"
+          error="Image upload was not CBCT MC slice Image"
         />
       )}
 

@@ -31,7 +31,7 @@ const NavbarPage = () => {
             <a className="text-xl font-semibold">About</a>
           </li>
           <li>
-            <a className="text-xl font-semibold">History</a>
+            <Link href="/history" className="text-xl font-semibold">History</Link>
           </li>
           <li>
             <a

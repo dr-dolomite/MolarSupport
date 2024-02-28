@@ -65,8 +65,10 @@ const M3InputCard = () => {
     // get the "session_id" from the JSON response
     const sessionId = data.session_id;
 
-    if (data.error) {
-      setErrorMessage("Something went wrong");
+    if (data.error)  {
+      console.log(data.error);
+      setErrorMessage("Something went wrong. Kindly check if you have uploaded the correct files.");
+      setShowSuccessModal(false);
       setShowErrorModal(true);
     } else {
       // Use startTransition to delay the navigation until the UI updates
@@ -154,6 +156,8 @@ const M3InputCard = () => {
     setFiles([]);
     showWaitingForFile(true);
     showFileUploaded(false);
+    setShowLoadingIcon(false);
+    // refresh the page
   }
 
   function showSuccessModalFunction() {
@@ -169,10 +173,11 @@ const M3InputCard = () => {
       {showSuccessModal && (
         <SuccessModal onBack={closeSuccessModal} onSubmit={handleSubmitFile} showLoadingIcon={showLoading} />
       )}
+
       {showErorModal && (
         <ErrorModal onClose={closeErrorModal} error={errorMessage} />
       )}
-      {}
+
       <div className="rounded-[16px] box p-8 py-12 gap-y-16 flex flex-col justify-center items-center">
         <form
           onDragEnter={handleDragEnter}

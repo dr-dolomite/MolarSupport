@@ -12,6 +12,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { FaArrowsRotate } from "react-icons/fa6";
 import { FaRegFolderOpen } from "react-icons/fa";
+import LoadingPage from "@/components/loading";
+
 import { useEffect, useState } from "react";
 
 import { useRouter } from "next/navigation";
@@ -34,6 +36,8 @@ export default function ResultPage({
             method: "GET",
           }
         );
+        // Simulate a slow network
+        // await new Promise((resolve) => setTimeout(resolve, 3000));
         const data = await response.json();
         setData(data);
         console.log(data);
@@ -46,7 +50,7 @@ export default function ResultPage({
   }, []);
 
   if (!data) {
-    return <h1>Loading</h1>;
+    return <LoadingPage/>
   }
 
   const {

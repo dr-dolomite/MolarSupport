@@ -58,7 +58,6 @@ cortical_model = load_model(
 class MolarCase(BaseModel):
     session_id: str
     session_folder: str
-    final_img_filename: str
     corticalization: str
     position: str
     distance: str
@@ -80,7 +79,6 @@ def create_table():  # create table for molar cases
                 CREATE TABLE IF NOT EXISTS molarcases (
                         session_id TEXT PRIMARY KEY NOT NULL,
                         session_folder TEXT NOT NULL,
-                        final_img_filename TEXT NOT NULL,
                         corticalization TEXT NOT NULL,
                         position TEXT NOT NULL,
                         distance FLOAT NOT NULL,
@@ -100,11 +98,10 @@ def create_case(case: MolarCase):  # (CRUD) Create molar case
     connection = create_connection()
     cursor = connection.cursor()
     cursor.execute(
-        "INSERT INTO molarcases (session_id, session_folder, final_img_filename, corticalization, position, distance, relation, risk) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        "INSERT INTO molarcases (session_id, session_folder, corticalization, position, distance, relation, risk) VALUES (?, ?, ?, ?, ?, ?, ?)",
         (
             case.session_id,
             case.session_folder,
-            case.final_img_filename,
             case.corticalization,
             case.position,
             case.distance,
@@ -207,6 +204,11 @@ async def start_process():
     m3_image_path = "input_images/m3_cbct/m3_temp.jpg"
     mc_image_path = "input_images/mc_cbct/mc_temp.jpg"
 
+    if not os.path.exists(m3_image_path) or not os.path.exists(mc_image_path):
+        from modules import cleanDirectories as cleanDirs
+        cleanDirs.clean_directories()
+        return JSONResponse(content={"error": "Error in finding the input images."})
+
     # Perform segmentation on M3 images
     from modules import m3predictSegment as m3Segment
 
@@ -261,17 +263,17 @@ async def start_process():
     distance = str(distance)
     distance = distance + " mm"
 
-
     # Saving the values to sqlite db
     image_with_distance = "output_images/distance_ouput/output_with_distance.jpg"
-    
+
     # Convert all of the needed values to string
     session_id = str(cuid.cuid())
-    
+
     # Store the images to the a session folder
     from modules import createSessionFolder as createSession
+
     session_folder = createSession.createSessionFolder(session_id)
-    
+
     session_folder = str(session_folder)
     image_with_distance = str(image_with_distance)
     corticalization = str(corticalization)
@@ -279,22 +281,22 @@ async def start_process():
     distance = str(distance)
     relation = str(relation)
     risk = str(risk)
-    
+
     new_case = MolarCase(
         session_id=session_id,
         session_folder=session_folder,
-        final_img_filename=image_with_distance,
         corticalization=corticalization,
         position=position,
         distance=distance,
         relation=relation,
         risk=risk,
     )
-    
+
     create_case(new_case)
 
     # Clean the contens of the "output_images" folder
     from modules import cleanDirectories as cleanDirs
+
     cleanDirs.clean_directories()
 
     # return all of the class results
@@ -328,14 +330,14 @@ async def get_molar_case(session_id: str):
             return {
                 "session_id": case[0],
                 "session_folder": case[1],
-                "final_img_filename": case[2],
-                "corticalization": case[3],
-                "position": case[4],
-                "distance": case[5],
-                "relation": case[6],
-                "risk": case[7],
+                "corticalization": case[2],
+                "position": case[3],
+                "distance": case[4],
+                "relation": case[5],
+                "risk": case[6],
             }
     raise HTTPException(status_code=404, detail="Case not found")
+
 
 # GET ENDPOINT FOR SHOWING ALL ENTRIES IN SQLITE DATABASE
 @app.get("/api/molarcases", response_model=List[MolarCase])
@@ -346,12 +348,11 @@ async def get_molar_cases():
         {
             "session_id": case[0],
             "session_folder": case[1],
-            "final_img_filename": case[2],
-            "corticalization": case[3],
-            "position": case[4],
-            "distance": case[5],
-            "relation": case[6],
-            "risk": case[7],
+            "corticalization": case[2],
+            "position": case[3],
+            "distance": case[4],
+            "relation": case[5],
+            "risk": case[6],
         }
         for case in cases
     ]
@@ -372,7 +373,7 @@ async def delete_molarcases_table():
 
 # ----------------- FastAPI DELETE API Endpoint -----------------#
 
-#----------------- FastAPI Misc Routes -----------------#
+# ----------------- FastAPI Misc Routes -----------------#
 
 # # Endpoint for opening the session folder
 # @app.post("/api/session/openFolder")
@@ -384,7 +385,7 @@ async def delete_molarcases_table():
 #         return {"message": "Session folder opened successfully", "session_folder_path": session_folder_path}
 #     else:
 #         return {"message": "Session folder not found"}
-    
+
 #     #raise HTTPException(status_code=404, detail="Case not found")
 
 # ----------------- FastAPI -----------------#
