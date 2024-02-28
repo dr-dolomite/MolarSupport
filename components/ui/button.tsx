@@ -19,13 +19,18 @@ const buttonVariants = cva(
           "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
-        submitButton: "bg-[#6D58C6] hover:bg-[#6D58C6]/90 text-white lg:text-2xl text-lg font-bold shadow-sm drop-shadow-xl"
+        submitButton: "bg-[#6D58C6] hover:bg-[#6D58C6]/90 text-white lg:text-2xl text-lg font-bold shadow-sm drop-shadow-xl",
+        errorButton: "bg-[#595080] hover:bg-[#595080]/90 text-white text-center lg:text-2xl text-lg font-bold cursor-pointer",
+        successButton: "border-3 border-[#039855] bg-[#039855] hover:bg-[#039855]/80 text-white text-center lg:text-2xl text-lg font-bold cursor-pointer",
+        successBack: "border-3 border-[#039855] hover:border-[#039855]/80 outline text-[#039855] hover:text-[#039855]/80 text-center lg:text-2xl text-lg font-bold cursor-pointer"
       },
       size: {
         default: "h-9 px-4 py-2",
         sm: "h-8 rounded-md px-3 text-xs",
         lg: "h-10 rounded-md px-8",
-        submitButton: "rounded-[16px] lg:px-6 lg:py-6 px-3 py-3",
+        submitButton: "rounded-[16px] lg:py-5 px-3 py-3",
+        errorButton: "rounded-[16px] lg:px-6 lg:py-4 px-3 py-3 w-full",
+        successButton: "rounded-[16px] lg:px-6 lg:py-4 px-3 py-3 w-full",
         icon: "h-9 w-9",
       },
     },

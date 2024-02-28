@@ -31,6 +31,9 @@ const NavbarPage = () => {
             <a className="text-xl font-semibold">About</a>
           </li>
           <li>
+            <a className="text-xl font-semibold">History</a>
+          </li>
+          <li>
             <a
               href="https://github.com/dr-dolomite/MolarSupport.git"
               target="_blank"

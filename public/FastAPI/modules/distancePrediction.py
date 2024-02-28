@@ -119,4 +119,10 @@ def detect_objects():
         
     cv2.imwrite('output_images/distance_output/ouput_with_distance.jpg', image)
     
+    # Write a temp image for public directory
+    # Check first if temp.jpg already exists
+    if os.path.exists('../temp-result/temp.jpg'):
+        os.remove('../temp-result/temp.jpg')
+    cv2.imwrite('../temp-result/temp.jpg', image)
+    
     return min_distance

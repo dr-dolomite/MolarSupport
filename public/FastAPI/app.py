@@ -152,7 +152,7 @@ app.add_middleware(
 
 
 # ----------------- FastAPI POST API Endpoints -----------------#
-@app.post("/check_m3_input")
+@app.post("/api/check_m3_input")
 async def check_m3_input(fileb: Annotated[UploadFile, File()]):
     try:
         from modules import inputClassify
@@ -176,7 +176,7 @@ async def check_m3_input(fileb: Annotated[UploadFile, File()]):
         )
 
 
-@app.post("/check_mc_input")
+@app.post("/api/check_mc_input")
 async def check_mc_input(fileb: Annotated[UploadFile, File()]):
     try:
         from modules import inputClassify
@@ -200,7 +200,7 @@ async def check_mc_input(fileb: Annotated[UploadFile, File()]):
         )
 
 
-@app.post("/start_process")
+@app.post("/api/start_process")
 async def start_process():
 
     # try:
@@ -262,17 +262,19 @@ async def start_process():
     distance = str(distance)
     distance = distance + " mm"
 
-    # Store the images to the a session folder
-    from modules import createSessionFolder as createSession
-    session_folder, session_dir = createSession.createSessionFolder()
-
 
     # Saving the values to sqlite db
     image_with_distance = "output_images/distance_ouput/output_with_distance.jpg"
     
     # Convert all of the needed values to string
     session_id = str(cuid.cuid())
-    session_folder = str(session_folder)
+    
+    # Store the images to the a session folder
+    from modules import createSessionFolder as createSession
+    session_folder = createSession.createSessionFolder(session_id)
+    session_folder_path = "/FastAPI/" + session_folder
+    
+    session_folder = str(session_folder_path)
     image_with_distance = str(image_with_distance)
     corticalization = str(corticalization)
     position = str(position)
@@ -290,7 +292,7 @@ async def start_process():
         relation=relation,
         risk=risk,
     )
-
+    
     create_case(new_case)
 
     # Clean the contens of the "output_images" folder
@@ -300,6 +302,7 @@ async def start_process():
     # return all of the class results
     return JSONResponse(
         content={
+            "session_id": session_id,
             "corticalization": corticalization,
             "position": position,
             "relation": relation,
@@ -319,7 +322,7 @@ from typing import List
 
 
 # Get endpoint for a single molar case based on the session_id
-@app.get("/molarcases/{session_id}", response_model=MolarCase)
+@app.get("/api/molarcase/{session_id}", response_model=MolarCase)
 async def get_molar_case(session_id: str):
     cases = get_all_cases()
     for case in cases:
@@ -337,7 +340,7 @@ async def get_molar_case(session_id: str):
     raise HTTPException(status_code=404, detail="Case not found")
 
 # GET ENDPOINT FOR SHOWING ALL ENTRIES IN SQLITE DATABASE
-@app.get("/molarcases", response_model=List[MolarCase])
+@app.get("/api/molarcases", response_model=List[MolarCase])
 async def get_molar_cases():
     cases = get_all_cases()
     # Return all of the molar case values in JSON format
@@ -363,7 +366,7 @@ async def get_molar_cases():
 
 
 # DELETE endpoint to delete the molarcases table
-@app.delete("/molarcases/table")
+@app.delete("/api/molarcases/table")
 async def delete_molarcases_table():
     delete_table()
     return {"message": "molarcases table deleted successfully"}

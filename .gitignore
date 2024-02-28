@@ -1,7 +1,7 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # model checkpoints
-/FastAPI/modules/model_checkpoint
+/public/FastAPI/modules/model_checkpoint
 
 # dependencies
 /node_modules
