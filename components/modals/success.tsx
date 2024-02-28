@@ -29,7 +29,7 @@ const SuccessModal = ({onBack, onSubmit, showLoadingIcon}: SuccessModalProps) =>
           <Button variant="successBack" size="successButton" onClick={onBack}>
             Back
           </Button>
-          <Button variant="successButton" size="successButton" onClick={onSubmit}>
+          <Button variant="successButton" size="successButton" onClick={onSubmit} disabled={showLoadingIcon}>
            {showLoadingIcon && (<Rings className="mr-2"/>)} Let’s start assessment
           </Button>
         </div>
