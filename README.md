@@ -79,10 +79,12 @@ uvicorn app:app --reload
 
 ## Contributing
 
+- Dianne Ritz Lapasaran
 - Rod Lester Moreno
 - Russel Yasol
 - Pio Lawrence Burgos
 - Melvin Saracin
+- Neil Clarence Diaz
 
 <br/>
 

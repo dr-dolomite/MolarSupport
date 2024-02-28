@@ -22,7 +22,8 @@ const buttonVariants = cva(
         submitButton: "bg-[#6D58C6] hover:bg-[#6D58C6]/90 text-white lg:text-2xl text-lg font-bold shadow-sm drop-shadow-xl",
         errorButton: "bg-[#595080] hover:bg-[#595080]/90 text-white text-center lg:text-2xl text-lg font-bold cursor-pointer",
         successButton: "border-3 border-[#039855] bg-[#039855] hover:bg-[#039855]/80 text-white text-center lg:text-2xl text-lg font-bold cursor-pointer",
-        successBack: "border-3 border-[#039855] hover:border-[#039855]/80 outline text-[#039855] hover:text-[#039855]/80 text-center lg:text-2xl text-lg font-bold cursor-pointer"
+        successBack: "border-3 border-[#039855] hover:border-[#039855]/80 outline text-[#039855] hover:text-[#039855]/80 text-center lg:text-2xl text-lg font-bold cursor-pointer",
+        purpleButton: "border-1 border-[#6D58C6] bg-[#A99AEB40] hover:border-[#6D58C6]/80 outline text-[#6D58C6] hover:text-[#6D58C6]/80 text-center text-lg font-bold cursor-pointer"
       },
       size: {
         default: "h-9 px-4 py-2",
@@ -31,6 +32,7 @@ const buttonVariants = cva(
         submitButton: "rounded-[16px] lg:py-5 px-3 py-3",
         errorButton: "rounded-[16px] lg:px-6 lg:py-4 px-3 py-3 w-full",
         successButton: "rounded-[16px] lg:px-6 lg:py-4 px-3 py-3 w-full",
+        purpleButton: "rounded-[16px] px-4 py-2",
         icon: "h-9 w-9",
       },
     },

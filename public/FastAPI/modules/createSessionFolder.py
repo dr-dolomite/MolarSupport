@@ -14,7 +14,7 @@ def createSessionFolder(sessionId):
     shutil.copytree("output_images", new_output_folder + "/output_images")
     shutil.copytree("input_images", new_output_folder + "/input_images")
 
-    return new_output_folder
+    return folder_with_id
     
     
     

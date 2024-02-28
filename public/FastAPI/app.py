@@ -19,9 +19,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 For contact information, reach out to russel.yasol@gmail.com
 """
 
-import cv2
 import os
-import datetime
+import subprocess
 
 import pandas as pd
 import tensorflow as tf
@@ -272,9 +271,8 @@ async def start_process():
     # Store the images to the a session folder
     from modules import createSessionFolder as createSession
     session_folder = createSession.createSessionFolder(session_id)
-    session_folder_path = "/FastAPI/" + session_folder
     
-    session_folder = str(session_folder_path)
+    session_folder = str(session_folder)
     image_with_distance = str(image_with_distance)
     corticalization = str(corticalization)
     position = str(position)
@@ -373,5 +371,20 @@ async def delete_molarcases_table():
 
 
 # ----------------- FastAPI DELETE API Endpoint -----------------#
+
+#----------------- FastAPI Misc Routes -----------------#
+
+# # Endpoint for opening the session folder
+# @app.post("/api/session/openFolder")
+# async def open_session_folder(session_id: str):
+#     session_folder_path = "session_output_images/session_" + session_id
+#     if os.path.exists(session_folder_path):
+#         # for Windows using Windows Explorer
+#         subprocess.Popen(['explorer.exe', session_folder_path])
+#         return {"message": "Session folder opened successfully", "session_folder_path": session_folder_path}
+#     else:
+#         return {"message": "Session folder not found"}
+    
+#     #raise HTTPException(status_code=404, detail="Case not found")
 
 # ----------------- FastAPI -----------------#
