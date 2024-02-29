@@ -77,6 +77,35 @@ const HistoryPage = () => {
     }
   };
 
+  const getRiskStyles = (risk: string) => {
+    let backgroundColor = "";
+    let textColor = "";
+
+    switch (risk) {
+      case "N.0 (Non-determinant)":
+        backgroundColor = "#58C5C080";
+        textColor = "#30BCB5";
+        break;
+      case "N.1 (Low)":
+        backgroundColor = "#87CF7580";
+        textColor = "#6ABC55";
+        break;
+      case "N.2 (Medium)":
+        backgroundColor = "#F0993F80";
+        textColor = "#F0871A";
+        break;
+      case "N.3 (High)":
+        backgroundColor = "#E9503980";
+        textColor = "#EC432A";
+        break;
+      default:
+        backgroundColor = "#58C5C080";
+        textColor = "#30BCB5";
+    }
+
+    return { backgroundColor, textColor };
+  };
+
   return (
     <div className="bg-[#f5f5f7] flex flex-row justify-center w-full">
       <div className="bg-[#f5f5f7] w-[1440px] h-[1024px] relative">
@@ -139,7 +168,7 @@ const HistoryPage = () => {
             </div>
           </div>
         </div>
-        <div className="overflow-y-scroll h-[575px] w-[1348px] overflow-x-hidden inline-flex flex-col items-start justify-center px-[24px] py-0 absolute top-[250px] left-[46px] bg-white rounded-[16px] shadow-[0px_3px_6px_#00000014,0px_10px_10px_#00000012,0px_24px_14px_#0000000a,0px_42px_17px_#00000003,0px_65px_18px_transparent]">
+        <div className="overflow-y-scroll h-[575px] w-[1348px] overflow-x-hidden inline-flex flex-col items-start px-[24px] py-0 absolute top-[250px] left-[46px] bg-white rounded-[16px] shadow-[0px_3px_6px_#00000014,0px_10px_10px_#00000012,0px_24px_14px_#0000000a,0px_42px_17px_#00000003,0px_65px_18px_transparent]">
           {!allSessionData ? (
             <h1>Loading</h1>
           ) :
@@ -182,11 +211,35 @@ const HistoryPage = () => {
                 </div>
               </div>
               <div className="flex w-[172px] items-center justify-center gap-[16px] px-[8px] py-[16px] relative">
-                <div className="inline-flex items-center justify-center gap-[10px] px-[32px] py-[4px] relative flex-[0_0_auto] bg-[#87cf7540] rounded-[100px]">
-                  <div className="relative w-fit mt-[-1.00px] font-extrabold text-[#69bc54] text-[20px] text-center tracking-[0] leading-[normal]">
-                   {sessionData.risk}
-                  </div>
-                </div>
+                
+                   <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="inline-flex items-center justify-center gap-[10px] px-[32px] py-[4px] relative flex-[0_0_auto] bg-[#87cf7540] rounded-[100px]" style={{ backgroundColor: getRiskStyles(sessionData.risk).backgroundColor }} >
+                          <div className="relative w-fit mt-[-1.00px] font-extrabold text-[#69bc54] text-[20px] text-center tracking-[0] leading-[normal]" style={{ color: getRiskStyles(sessionData.risk).textColor }}>
+                            {(
+                              () => {
+                                if (sessionData.risk === "N.0 (Non-determinant)") {
+                                  return "N.0";
+                                } else if (sessionData.risk === "N.1 (Low)") {
+                                  return "N.1";
+                                } else if (sessionData.risk === "N.2 (Medium)") {
+                                  return "N.2";
+                                } else if (sessionData.risk === "N.3 (High)") {
+                                  return "N.3";
+                                } else {
+                                  return "Unknown";
+                                }
+                              }
+                            )()}
+                          </div>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {sessionData.risk}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
               </div>
               {/* <div className="cursor-pointer flex w-[172px] items-center justify-center gap-[16px] px-[8px] py-[16px] relative">
                 <div className="inline-flex items-center justify-center gap-[10px] px-[16px] py-[4px] relative flex-[0_0_auto] bg-[#e2def4] rounded-[100px] border border-solid border-[#6d58c6]">
