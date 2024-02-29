@@ -252,7 +252,6 @@ const M3InputCard = () => {
           variant="submitButton"
           className="w-full"
           onClick={showSuccessModalFunction}
-          disabled={isPending}
         >
           <RxMagnifyingGlass className="mr-2 size-8" /> Start Assessment
         </Button>
