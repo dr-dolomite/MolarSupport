@@ -17,21 +17,21 @@ import { Button } from "./ui/button";
 const NavbarPage = () => {
   return (
     <nav className="navbar container pt-8">
-      <div className="flex-1">
+      <a className="flex-1" href="/">
         <img
           src="/logo/molar-logo-2.svg"
           alt="molar-logo-2"
           className="size-12"
         />
-        <a className="btn btn-ghost text-2xl font-bold">Molar Support</a>
-      </div>
+        <div className="btn btn-ghost text-2xl font-bold">Molar Support</div>
+      </a>
       <div className="flex-none">
         <ul className="menu menu-horizontal px-1 items-center gap-x-8">
           <li>
             <a className="text-xl font-semibold">About</a>
           </li>
           <li>
-            <Link href="/history" className="text-xl font-semibold">History</Link>
+            <a className="text-xl font-semibold" href="/history">History</a>
           </li>
           <li>
             <a

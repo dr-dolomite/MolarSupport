@@ -6,12 +6,28 @@ import { TiWarningOutline } from "react-icons/ti";
 import { Button } from "@/components/ui/button";
 
 interface ErrorModalProps {
-    onClose: () => void;
-    error: string;
+  onClose: () => void;
+  error: string;
+  button: string;
 }
 
-const ErrorModal = ({onClose, error}:ErrorModalProps) => {
-  
+async function deleteTemps(onClose: () => void) {
+  try {
+    const response = await fetch(
+      "http://127.0.0.1:8000/api/delete_temp_images",
+      {
+        method: "DELETE",
+      }
+    );
+    const data = await response.json();
+    console.log(data);
+    onClose(); // Call onClose after deletion is successful
+  } catch (error) {
+    console.error("Error deleting temp files:", error);
+  }
+}
+
+const ErrorModal = ({ onClose, error, button }: ErrorModalProps) => {
   return (
     // If show is true display the div below
     // Else, display nothing
@@ -22,16 +38,20 @@ const ErrorModal = ({onClose, error}:ErrorModalProps) => {
         </div>
 
         <div className="space-y-2 flex flex-col items-center justify-center">
-        <h1 className="text-[#3F3375] text-center text-[4rem] font-extrabold leading-none">
-          Oops!
-        </h1>
-        <p className="text-[#667085] font-semibold text-[1.6rem] text-center w-3/5 mt-4">
-          {error}
-        </p>
+          <h1 className="text-[#3F3375] text-center text-[4rem] font-extrabold leading-none">
+            Oops!
+          </h1>
+          <p className="text-[#667085] font-semibold text-[1.6rem] text-center w-3/5 mt-4">
+            {error}
+          </p>
         </div>
-        
-        <Button variant="errorButton" size="errorButton" onClick={onClose}>
-          Try again
+
+        <Button
+          variant="errorButton"
+          size="errorButton"
+          onClick={() => deleteTemps(onClose)}
+        >
+          {button}
         </Button>
       </Card>
     </div>

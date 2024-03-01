@@ -20,7 +20,7 @@ For contact information, reach out to russel.yasol@gmail.com
 """
 
 import os
-import subprocess
+import shutil
 
 import pandas as pd
 import tensorflow as tf
@@ -34,6 +34,8 @@ from pydantic import BaseModel
 from typing import Annotated
 import sqlite3
 import cuid
+
+import datetime
 
 # Avoid Out Of Memory (OOM) errors by setting GPU Memory Consumption Growth
 gpus = tf.config.experimental.list_physical_devices("GPU")
@@ -63,7 +65,7 @@ class MolarCase(BaseModel):
     distance: str
     relation: str
     risk: str
-
+    date: str
 
 # --------------- SQLITE AREA ---------------#
 def create_connection():  # establish connection
@@ -83,7 +85,8 @@ def create_table():  # create table for molar cases
                         position TEXT NOT NULL,
                         distance FLOAT NOT NULL,
                         relation TEXT NOT NULL,
-                        risk TEXT NOT NULL
+                        risk TEXT NOT NULL,
+                        date TEXT NOT NULL
                 );
                     """
     )
@@ -91,14 +94,11 @@ def create_table():  # create table for molar cases
     connection.close()
 
 
-create_table()
-
-
 def create_case(case: MolarCase):  # (CRUD) Create molar case
     connection = create_connection()
     cursor = connection.cursor()
     cursor.execute(
-        "INSERT INTO molarcases (session_id, session_folder, corticalization, position, distance, relation, risk) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        "INSERT INTO molarcases (session_id, session_folder, corticalization, position, distance, relation, risk, date) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
         (
             case.session_id,
             case.session_folder,
@@ -107,10 +107,25 @@ def create_case(case: MolarCase):  # (CRUD) Create molar case
             case.distance,
             case.relation,
             case.risk,
+            case.date,
         ),
     )
     connection.commit()
     connection.close()
+
+
+# Function to check if the first row is empty
+def check_first_row():
+    connection = create_connection()
+    cursor = connection.cursor()
+    cursor.execute("SELECT * FROM molarcases LIMIT 1")
+    row = cursor.fetchone()
+    if not row:
+        message = 0
+        return message
+    else:
+        message = 1
+        return message
 
 
 # Function to get all molar cases from the SQLite database
@@ -128,6 +143,25 @@ def delete_table():
     connection = create_connection()
     cursor = connection.cursor()
     cursor.execute("DROP TABLE IF EXISTS molarcases")
+    connection.commit()
+    connection.close()
+
+
+# Function for deleting all of molarcases values
+def delete_all_cases():
+    
+    # delete the temp-result folder
+    temp_result_folder = "../public/temp-result"
+    if os.path.exists(temp_result_folder):
+        shutil.rmtree(temp_result_folder)
+        
+        # create the folder again
+        os.mkdir(temp_result_folder)
+    
+    
+    connection = create_connection()
+    cursor = connection.cursor()
+    cursor.execute("DELETE FROM molarcases")
     connection.commit()
     connection.close()
 
@@ -199,15 +233,22 @@ async def check_mc_input(fileb: Annotated[UploadFile, File()]):
 @app.post("/api/start_process")
 async def start_process():
 
+    create_table()
+
     # try:
     # Specify image file path
     m3_image_path = "input_images/m3_cbct/m3_temp.jpg"
     mc_image_path = "input_images/mc_cbct/mc_temp.jpg"
 
-    if not os.path.exists(m3_image_path) or not os.path.exists(mc_image_path):
-        from modules import cleanDirectories as cleanDirs
-        cleanDirs.clean_directories()
-        return JSONResponse(content={"error": "Error in finding the input images."})
+    # Generate a session ID
+    # Convert all of the needed values to string
+    session_id = str(cuid.cuid())
+
+    # if not os.path.exists(m3_image_path) or not os.path.exists(mc_image_path):
+    #     from modules import cleanDirectories as cleanDirs
+
+    #     cleanDirs.clean_directories()
+    #     return JSONResponse(content={"error": "Error in finding the input images."})
 
     # Perform segmentation on M3 images
     from modules import m3predictSegment as m3Segment
@@ -246,7 +287,7 @@ async def start_process():
     # Call distance prediction model
     from modules import distancePrediction as distancePredict
 
-    distance = distancePredict.detect_objects()
+    distance = distancePredict.detect_objects(session_id)
 
     # Call the position prediction model
     from modules import positionPredict as predictPos
@@ -266,9 +307,6 @@ async def start_process():
     # Saving the values to sqlite db
     image_with_distance = "output_images/distance_ouput/output_with_distance.jpg"
 
-    # Convert all of the needed values to string
-    session_id = str(cuid.cuid())
-
     # Store the images to the a session folder
     from modules import createSessionFolder as createSession
 
@@ -282,6 +320,8 @@ async def start_process():
     relation = str(relation)
     risk = str(risk)
 
+    date = datetime.datetime.now().strftime("%Y-%m-%d")
+
     new_case = MolarCase(
         session_id=session_id,
         session_folder=session_folder,
@@ -290,6 +330,7 @@ async def start_process():
         distance=distance,
         relation=relation,
         risk=risk,
+        date=date,
     )
 
     create_case(new_case)
@@ -308,6 +349,7 @@ async def start_process():
             "relation": relation,
             "risk": risk,
             "distance": distance,
+            "date": date,
         }
     )
 
@@ -335,6 +377,7 @@ async def get_molar_case(session_id: str):
                 "distance": case[4],
                 "relation": case[5],
                 "risk": case[6],
+                "date": case[7],
             }
     raise HTTPException(status_code=404, detail="Case not found")
 
@@ -342,20 +385,51 @@ async def get_molar_case(session_id: str):
 # GET ENDPOINT FOR SHOWING ALL ENTRIES IN SQLITE DATABASE
 @app.get("/api/molarcases", response_model=List[MolarCase])
 async def get_molar_cases():
-    cases = get_all_cases()
-    # Return all of the molar case values in JSON format
-    return [
-        {
-            "session_id": case[0],
-            "session_folder": case[1],
-            "corticalization": case[2],
-            "position": case[3],
-            "distance": case[4],
-            "relation": case[5],
-            "risk": case[6],
-        }
-        for case in cases
-    ]
+    try:
+        # Check if the table exists
+        if not os.path.exists("db/molarcases.db"):
+            raise HTTPException(
+                status_code=404, detail="The molarcases table does not exist."
+            )
+
+        # Check the first row if empty
+        if check_first_row() == 0:
+            raise HTTPException(
+                status_code=404, detail="The molarcases table is empty."
+            )
+
+        # If there are entries in the molarcases table
+        cases = get_all_cases()
+        if cases:
+            return [
+                {
+                    "session_id": case[0],
+                    "session_folder": case[1],
+                    "corticalization": case[2],
+                    "position": case[3],
+                    "distance": case[4],
+                    "relation": case[5],
+                    "risk": case[6],
+                    "date": case[7],
+                }
+                for case in cases
+            ]
+        else:
+            raise HTTPException(status_code=404, detail="No data available")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="An error occurred: " + str(e))
+
+
+@app.get("/api/check_if_both_images_exist")
+async def check_if_both_images_exist():
+    m3_image_path = "input_images/m3_cbct/m3_temp.jpg"
+    mc_image_path = "input_images/mc_cbct/mc_temp.jpg"
+
+    if not os.path.exists(m3_image_path) or not os.path.exists(mc_image_path):
+
+        return {"error": "Error in finding the input images."}
+
+    return {"success": "Both images exist."}
 
 
 # ----------------- FastAPI GET API Endpoint -----------------#
@@ -364,10 +438,24 @@ async def get_molar_cases():
 # ----------------- FastAPI DELETE API Endpoint -----------------#
 
 
+@app.delete("/api/delete_temp_images")
+async def delete_temp_images():
+    m3_image_path = "input_images/m3_cbct/m3_temp.jpg"
+    mc_image_path = "input_images/mc_cbct/mc_temp.jpg"
+
+    if os.path.exists(m3_image_path) and os.path.exists(mc_image_path):
+        os.remove(m3_image_path)
+        os.remove(mc_image_path)
+        return {"message": "Temp images deleted successfully"}
+
+    return {"message": "Temp images not found"}
+
+
 # DELETE endpoint to delete the molarcases table
-@app.delete("/api/molarcases/table")
+@app.delete("/api/molarcases/delete")
 async def delete_molarcases_table():
-    delete_table()
+    # delete_table()
+    delete_all_cases()
     return {"message": "molarcases table deleted successfully"}
 
 
@@ -375,17 +463,52 @@ async def delete_molarcases_table():
 
 # ----------------- FastAPI Misc Routes -----------------#
 
-# # Endpoint for opening the session folder
-# @app.post("/api/session/openFolder")
-# async def open_session_folder(session_id: str):
-#     session_folder_path = "session_output_images/session_" + session_id
-#     if os.path.exists(session_folder_path):
-#         # for Windows using Windows Explorer
-#         subprocess.Popen(['explorer.exe', session_folder_path])
-#         return {"message": "Session folder opened successfully", "session_folder_path": session_folder_path}
-#     else:
-#         return {"message": "Session folder not found"}
-
-#     #raise HTTPException(status_code=404, detail="Case not found")
+# Route for sample cases
+@app.get("/api/sample_cases/{id}")
+async def sample_cases(id: str):
+    if id == "1":
+        return (
+            {
+                "session_id": "1",
+                "corticalization": "Negative",
+                "position": "Lingual",
+                "distance": "0 mm",
+                "relation": "Class 2B",
+                "risk": "N.1 (Low)",
+            }
+        )
+    elif id == "2":
+        return (
+            {
+                "session_id": "2",
+                "corticalization": "Negative",
+                "position": "Apical",
+                "distance": "5.5 mm",
+                "relation": "Class 1A",
+                "risk": "N.1 (Low)",
+            }
+        )
+    elif id == "3":
+        return (
+            {
+                "session_id": "3",
+                "corticalization": "Negative",
+                "position": "Lingual",
+                "distance": "0.64 mm",
+                "relation": "Class 2B",
+                "risk": "N.1 (Low)",
+            }
+        )
+    else :
+        return (
+            {
+                "session_id": "4",
+                "corticalization": "Positive",
+                "position": "Lingual",
+                "distance": "0 mm",
+                "relation": "Class 4B",
+                "risk": "N.3 (High)",
+            }
+        )
 
 # ----------------- FastAPI -----------------#

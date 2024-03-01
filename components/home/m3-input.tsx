@@ -28,7 +28,7 @@ const M3InputCard = () => {
     e.preventDefault();
     console.log("File has been added");
 
-    async function checkMcInput() {
+    async function checkM3Input() {
       const formData = new FormData();
       formData.append("fileb", e.target.files[0]);
       const response = await fetch("http://127.0.0.1:8000/api/check_m3_input", {
@@ -43,7 +43,7 @@ const M3InputCard = () => {
     }
 
     // check if the file is a valid CBCT MC slice
-    checkMcInput();
+    checkM3Input();
 
     showFileUploaded(true);
     showWaitingForFile(false);
@@ -55,8 +55,39 @@ const M3InputCard = () => {
     }
   }
 
+  function checkInputImages() {
+    async function checkAPI() {
+      const response = await fetch(
+        "http://127.0.0.1:8000/api/check_if_both_images_exist",
+        {
+          method: "GET",
+        }
+      );
+
+      const data = await response.json();
+
+      if (data.error) {
+        setErrorMessage(
+          "Something went wrong. Make sure both images are uploaded."
+        );
+        setShowSuccessModal(false);
+        setShowErrorModal(true);
+      }
+
+      if (data.success) {
+        setShowSuccessModal(true);
+      }
+    }
+
+    checkAPI();
+  }
+
   // Call Start Process POST API and redirect to "/assessment" page
   async function startProcess() {
+
+    // add a 1000 ms delay to simulate the loading icon
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
     const response = await fetch("http://127.0.0.1:8000/api/start_process", {
       method: "POST",
     });
@@ -65,9 +96,12 @@ const M3InputCard = () => {
     // get the "session_id" from the JSON response
     const sessionId = data.session_id;
 
-    if (data.error)  {
+    if (data.error) {
       console.log(data.error);
-      setErrorMessage("Something went wrong. Kindly check if you have uploaded the correct files.");
+      setErrorMessage(
+        "Something went wrong. Make sure both images are uploaded."
+      );
+      setFiles([]);
       setShowSuccessModal(false);
       setShowErrorModal(true);
     } else {
@@ -85,7 +119,7 @@ const M3InputCard = () => {
       // no file has been submitted
       console.log("No file has been submitted");
       setErrorMessage(
-        "No file has been submitted. Please upload the neccessary files."
+        "M3 image has not been submitted. Please upload the neccessary files."
       );
       setShowSuccessModal(false);
       setShowErrorModal(true);
@@ -156,13 +190,12 @@ const M3InputCard = () => {
     setFiles([]);
     showWaitingForFile(true);
     showFileUploaded(false);
-    setShowLoadingIcon(false);
-    // refresh the page
+    // setShowLoadingIcon(false);
   }
 
-  function showSuccessModalFunction() {
-    setShowSuccessModal(true);
-  }
+  // function showSuccessModalFunction() {
+  //   setShowSuccessModal(true);
+  // }
 
   function closeSuccessModal() {
     setShowSuccessModal(false);
@@ -171,11 +204,19 @@ const M3InputCard = () => {
   return (
     <>
       {showSuccessModal && (
-        <SuccessModal onBack={closeSuccessModal} onSubmit={handleSubmitFile} showLoadingIcon={showLoading} />
+        <SuccessModal
+          onBack={closeSuccessModal}
+          onSubmit={handleSubmitFile}
+          showLoadingIcon={showLoading}
+        />
       )}
 
       {showErorModal && (
-        <ErrorModal onClose={closeErrorModal} error={errorMessage} />
+        <ErrorModal
+          onClose={closeErrorModal}
+          error={errorMessage}
+          button="Try Again"
+        />
       )}
 
       <div className="rounded-[16px] box p-8 py-12 gap-y-16 flex flex-col justify-center items-center">
@@ -206,7 +247,7 @@ const M3InputCard = () => {
                 className="size-24 cursor-pointer"
               />
               <h1 className="text-[#878787] px-8 text-3xl font-bold text-center cursor-pointer">
-                Drag & drop to upload the CBCT M3 Axial slice image
+                Drag & drop to upload the CBCT M3 slice image
               </h1>
               <div className="my-20">
                 <p className="text-[#878787] font-medium text-xl text-center capitalize">
@@ -256,7 +297,7 @@ const M3InputCard = () => {
           size="submitButton"
           variant="submitButton"
           className="w-full"
-          onClick={showSuccessModalFunction}
+          onClick={checkInputImages}
         >
           <RxMagnifyingGlass className="mr-2 size-8" /> Start Assessment
         </Button>

@@ -15,10 +15,10 @@ import { useRouter } from "next/navigation";
 
 import Image from "next/image";
 
-export default function ResultPage({
+export default function SamplePage({
   params,
 }: {
-  params: { resultId: string };
+  params: { sampleId: string };
 }) {
   const router = useRouter();
   const [data, setData] = useState(null);
@@ -34,7 +34,7 @@ export default function ResultPage({
         await new Promise((resolve) => setTimeout(resolve, 1000));
 
         const response = await fetch(
-          `http://127.0.0.1:8000/api/molarcase/${params.resultId}`,
+          `http://127.0.0.1:8000/api/sample_cases/${params.sampleId}`,
           {
             method: "GET",
           }
@@ -122,7 +122,7 @@ export default function ResultPage({
 
           <Card className="p-8 flex items-center justify-center">
             <Image
-              src={`/temp-result/temp-${session_id}.jpg`}
+              src={`/sample/sample-${session_id}.jpg`}
               alt="result-image"
               width={480}
               height={480}
@@ -255,4 +255,4 @@ export default function ResultPage({
   );
 }
 
-// export default ResultPage;
+// export default SamplePage;

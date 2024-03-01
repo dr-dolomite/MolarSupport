@@ -30,7 +30,7 @@ def filter_color(image, lower, upper):
 
 #169_predicted - 
 
-def detect_objects():
+def detect_objects(session_id):
     # Load the image
     image_path = "output_images/enhanced_output/enhanced_final.jpg"
     #dimensions = (355, 355)
@@ -121,8 +121,9 @@ def detect_objects():
     
     # Write a temp image for public directory
     # Check first if temp.jpg already exists
-    if os.path.exists('../public/temp-result/temp.jpg'):
-        os.remove('../public/temp-result/temp.jpg')
-    cv2.imwrite('../public/temp-result/temp.jpg', image)
+    temp_img_path = '../public/temp-result/temp-' + session_id + '.jpg'
+    if os.path.exists(temp_img_path):
+        os.remove(temp_img_path)
+    cv2.imwrite(temp_img_path, image)
     
     return min_distance
