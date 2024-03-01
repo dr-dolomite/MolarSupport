@@ -1,11 +1,9 @@
-
 import AboutCard from "@/components/home/about-card";
 import ExampleCard from "@/components/home/example-card";
 import M3InputCard from "@/components/home/m3-input";
 import McInputCard from "@/components/home/mc-input";
 
 const HomePage = () => {
-
   return (
     <div className="flex justify-center items-center py-16 px-24">
       <div className="flex flex-row justify-center items-center space-x-16">

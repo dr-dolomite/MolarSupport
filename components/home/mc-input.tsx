@@ -125,8 +125,8 @@ const McInputCard = () => {
       {showErorModal && (
         <ErrorModal
           onClose={closeErrorModal}
-          error="Image upload was not 
-CBCT MC slice Image"
+          error="Image uploaded was not CBCT MC slice Image"
+          button="Try Again"
         />
       )}
 
@@ -155,7 +155,7 @@ CBCT MC slice Image"
             >
               <FaArrowUpFromBracket className="text-3xl" />
               <p className="text-2xl font-medium">
-                Upload CBCT Mandibular Canal
+                Upload Segmented CBCT Mandibular Canal
               </p>
             </div>
           )}
