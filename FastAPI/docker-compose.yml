@@ -1,7 +1,6 @@
-version: '3s'
-
+version: '3.8'
 services:
-  web:
+  molarapiapp:
     build: .
     ports:
-      - "8000:80"
+      - "8000:8000"

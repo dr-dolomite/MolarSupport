@@ -1,9 +1,14 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+
+import {useState} from "react";
+
+import { motion } from "framer-motion";
+
 import { LoginButton } from "@/components/auth/login-button";
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
-import { motion, useAnimation, useInView } from "framer-motion";
+
+import { AnimatedText } from "@/components/animation/animated-text";
+import { DelayedAnimatedText } from "@/components/animation/delayed-animated";
 
 export default function Home() {
   const [firstAnimationComplete, setFirstAnimationComplete] = useState(false);
@@ -52,102 +57,3 @@ export default function Home() {
     </main>
   );
 }
-
-type AnimatedTextProps = {
-  text: string | string[];
-  el?: keyof JSX.IntrinsicElements;
-  className?: string;
-  once?: boolean;
-  onAnimationComplete?: () => void;
-};
-
-export const AnimatedText = ({
-  text,
-  el: Wrapper = "p",
-  className,
-  once,
-  onAnimationComplete,
-}: AnimatedTextProps) => {
-  const control = useAnimation();
-  const ref = useRef(null);
-  const textArray = Array.isArray(text) ? text : [text];
-  const isInView = useInView(ref, { amount: 0.1, once });
-
-  useEffect(() => {
-    if (isInView) {
-      control.start("visible");
-    } else {
-      control.start("hidden");
-    }
-  }, [isInView]);
-
-  useEffect(() => {
-    if (once && onAnimationComplete && isInView) {
-      onAnimationComplete();
-    }
-  }, [isInView]);
-
-  return (
-    <Wrapper className={className}>
-      <span className="sr-only">{text}</span>
-      <motion.span
-        ref={ref}
-        initial="hidden"
-        animate={control}
-        transition={{ staggerChildren: 0.08 }}
-        aria-hidden
-      >
-        {textArray.map((line, lineIndex) => (
-          <span key={lineIndex} className="block">
-            {line.split(" ").map((word, wordIndex) => (
-              <span key={wordIndex} className="inline-block">
-                {word.split("").map((char, charIndex) => (
-                  <motion.span
-                    key={charIndex}
-                    className="inline-block"
-                    variants={defaultAnimations}
-                  >
-                    {char}
-                  </motion.span>
-                ))}
-                <span className="inline-block">&nbsp;</span>
-              </span>
-            ))}
-          </span>
-        ))}
-      </motion.span>
-    </Wrapper>
-  );
-};
-
-type DelayedAnimatedTextProps = AnimatedTextProps & {
-  delay?: number;
-};
-
-export const DelayedAnimatedText = ({
-  delay = 1800,
-  ...props
-}: DelayedAnimatedTextProps) => {
-  const [isDisplayed, setIsDisplayed] = useState(false);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsDisplayed(true);
-    }, delay);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  return isDisplayed ? <AnimatedText {...props} /> : null;
-};
-
-const defaultAnimations = {
-  hidden: { opacity: 0, y: 10 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.1,
-    },
-  },
-};

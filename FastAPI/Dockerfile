@@ -1,25 +1,23 @@
-#
+# Select the base image
 FROM python:3.9
 
-#
-WORKDIR /FASTAPI
+# Initialize the working directory
+WORKDIR /fastapiapp
 
+# Copy the requirements file
+COPY ./requirements.txt /fastapiapp/requirements.txt
 
-# COPY requirements.txt ./
-
-#
+# Update the pip
 RUN pip install --upgrade pip
-RUN pip install fastapi
-RUN pip install uvicorn
-RUN pip install pydantic
-RUN pip install python-multipart
-RUN pip install tensorflow[and-cuda]
-RUN pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
-RUN pip install opencv-python
-RUN pip install pandas
 
-#
-COPY . .
+# Install the requirements
+RUN pip install --no-cache-dir -r /fastapiapp/requirements.txt
+
+# Install pytorch
+RUN pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+
+# Copy the rest of the files
+COPY ./ /fastapiapp/
 
 #
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
