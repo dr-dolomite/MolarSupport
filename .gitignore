@@ -3,6 +3,7 @@
 # model checkpoints & session images
 /FastAPI/modules/model_checkpoint
 /FastAPI/session_output_images
+/FastAPI/session_output_images
 
 # dependencies
 /node_modules
