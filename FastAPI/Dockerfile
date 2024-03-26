@@ -1,5 +1,8 @@
-# Select the base image
-FROM python:3.9
+# Description: Dockerfile for the FastAPI app
+
+
+# Select the base image python:3.10-slim-bookworm
+FROM python:3.10-slim-bookworm
 
 # Initialize the working directory
 WORKDIR /fastapiapp

@@ -22,7 +22,7 @@ import { Button } from "@/components/ui/button";
           </Button>
   
           <div className="flex flex-col p-8 justify-center items-center">
-            <TiWarningOutline className="text-[#3F3375] size-60" />
+            <TiWarningOutline className="text-[#FF4D4F] size-60" />
             <h1 className="font-semibold text-[#667085] text-[1.5rem] mt-12">
               Do you want to delete all of the stored sessions?
             </h1>
