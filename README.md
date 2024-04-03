@@ -2,6 +2,9 @@
 
 This is a simple web application that uses machine learning models to do segmentations, classifications, and predictions on CBCT slice images of M3 and MC to assess the risk based on Maliogne's classification. The frontend is built using NextJS and the backend is built using FastAPI. The machine learning models are built using Tensorflow and Pytorch.
 
+Contact Russel Yasol for the models. 
+russel.yasol@wvsu.edu.ph
+
 <br/>
 
 ## Installation
@@ -10,7 +13,7 @@ This is a simple web application that uses machine learning models to do segment
 
 ### For Frontend
 
-Make sure to have Node.js installed
+Make sure to have Node.js installed. Go to MolarSupport root directory and run
 
 ```bash
 npm install
@@ -20,32 +23,11 @@ npm install
 
 ### For Backend
 
-Make sure to have a WSL2 Ubuntu installed 
+Make sure to have a a Docker Desktop Installed (and WSL2 if needed)
 
 <br/>
 
-Create a new virtual environment using Anaconda
-
-```bash
-conda create --name FASTAPI python=3.9 -y
-```
-
-
-Activate the environment
-
-```bash
-conda activate FASTAPI
-```
-
-
-Install the required packages
-
-```bash
-pip install -r requirements.txt
-```
-
-
-Create the model folder
+Create the model folder at FastAPI root directory
     
 ```bash
 mkdir modules/model_checkpoint
@@ -53,20 +35,43 @@ mkdir modules/model_checkpoint
 
 Paste the model checkpoints
 
+Build the Docker Image. (For Linux, rename WSL2_requirements.txt to requirements.txt)
+
+```bash
+docker build -t molar-app . 
+```
+
 <br/>
 
 ## Usage
 
-Run the API
+Run the Frontend
 
 ```bash
-uvicorn app:app --reload
+npm run dev
+```
+
+Run the Docker Container
+
+```bash
+docker run -p 8000:8000 molar-app
+```
+
+To exit
+
+```bash
+Press Ctrcl + C
+wsl --shutdown
 ```
 
 <br/>
 
 ## Changes
 
+
+(For WSL2_requirements.txt)
+- Added requirements.txt to support Windows by default
+- Added WSL2_requirements.txt to support Linux
 - Ported to WSL2 Ubuntu
 - Used newer Tensorflow version available for Linux
 - Used Pytorch based on 12.1 CUDA
