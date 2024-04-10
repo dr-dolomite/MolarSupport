@@ -1103,6 +1103,30 @@ def detect_objects(image_path):
     purple_regions = filter_color(hsv, lower_purple, upper_purple)
     green_regions = filter_color(hsv, lower_green, upper_green)
 
+    # --- CHANGE THE GREEN AND PURPLE REGIONS TO ONLY ONE SHADE ---
+    
+    # Filter out green regions for pixel replacement
+    green_mask = cv2.inRange(hsv, lower_green, upper_green)
+    green_points = cv2.findNonZero(green_mask)
+
+    # Assign the desired green color to all green points
+    green_color = (16, 119, 26)
+    for point in green_points:
+        x, y = point[0]
+        image[y, x] = green_color
+
+    # Filter out purple regions for pixel replacement
+    purple_mask = cv2.inRange(hsv, lower_purple, upper_purple)
+    purple_points = cv2.findNonZero(purple_mask)
+
+    # Assign the desired purple color to all purple points
+    purple_color = (101,49,142)
+    for point in purple_points:
+        x, y = point[0]
+        image[y, x] = purple_color
+
+    # --- CHANGE THE GREEN AND PURPLE REGIONS TO ONLY ONE SHADE ---
+
     # Combine the purple and green regions
     combined_regions = cv2.bitwise_or(purple_regions, green_regions)
 
@@ -1122,6 +1146,19 @@ def detect_objects(image_path):
     for contour in contours:
         points = np.array(contour[:, 0, :])
         object_points.append(points)
+
+    # print("Len:", len(object_points))
+
+    if len(object_points) > 2: # if there are more than 2 detected contours i.e. other teeth, choose the two at the bottom
+        # Get the last two contours
+        last_two_contours = object_points[-2:]
+    
+        # Remove the last two contours from object_points
+        object_points = object_points[:-2]
+    
+        # Append the last two contours to the beginning of object_points
+        object_points.insert(0, last_two_contours[0])
+        object_points.insert(1, last_two_contours[1])
 
     # Calculate the least Euclidean distance between points of the two objects (this should be the true distance)
     min_distance = float('inf')
@@ -1160,7 +1197,14 @@ def detect_objects(image_path):
 
         # Display the value of min_distance on top of the line
         text_position = ((point_a_min[0] + point_b_min[0]) // 2, (point_a_min[1] + point_b_min[1]) // 2)
-        cv2.putText(image, f"{min_distance:.2f} mm", text_position, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 3)
+    else:
+        # If no points found, set distance to 0.0 and display it
+        min_distance = 0.0
+        # Position the text at the center of the image
+        text_position = (image.shape[1] // 2, image.shape[0] // 2)
+
+    # Display the distance on the image
+    cv2.putText(image, f"{min_distance:.2f} mm", text_position, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 3)
 
     # get current date and time
     current_datetime = datetime.now().strftime("%Y-%m-%d %H-%M-%S")
