@@ -2,21 +2,78 @@ import cv2
 import numpy as np
 import os
 
+
+# Function to convert OpenCV BGR image to RGB
+def convert_to_rgb_and_display(image, title):
+    image_contour_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    # Display the images using Matplotlib
+    plt.figure(figsize=(10, 5))
+
+    # Display the contour result
+    plt.imshow(image_contour_rgb)
+    plt.title(title)
+    plt.axis("off")
+    plt.show()
+
+
+# Function to draw an arrow from the text to the point
+def draw_arrow(image, text_position, point_position, color):
+    # Draw the arrow
+    cv2.arrowedLine(
+        image, text_position, point_position, color, thickness=1, tipLength=0.1
+    )
+
+
+# # Function to display a cropped portion of the image centered around the specified point
+# def display_zoomed_image(image, center_x, center_y, zoom_factor, title):
+#     height, width = image.shape[:2]
+
+#     # Calculate the size of the zoomed-in region
+#     zoom_width = int(width * zoom_factor)
+#     zoom_height = int(height * zoom_factor)
+
+#     # Define the top-left corner of the zoomed-in region
+#     x1 = max(0, center_x - zoom_width // 2)
+#     y1 = max(0, center_y - zoom_height // 2)
+
+#     # Define the bottom-right corner of the zoomed-in region
+#     x2 = min(width, center_x + zoom_width // 2)
+#     y2 = min(height, center_y + zoom_height // 2)
+
+#     # Crop the image to the zoomed-in region
+#     zoomed_image = image[y1:y2, x1:x2]
+
+#     # Resize the zoomed-in region to the original size
+#     zoomed_image = cv2.resize(zoomed_image, (width, height))
+
+#     convert_to_rgb_and_display(
+#         zoomed_image, title
+#     )  # convert OpenCV BGR image to RGB and display
+
+#     # Display the zoomed-in image
+#     # cv2.imshow('Zoomed Image', zoomed_image)
+#     # cv2.waitKey(0)
+#     # cv2.destroyAllWindows()
+
+
 # Calculate distance between M3 and MC using Euclidean Distance formula
 def calculate_distance(point1, point2):
-    return np.sqrt((point1[0] - point2[0])**2 + (point1[1] - point2[1])**2)
+    return np.sqrt((point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2)
 
-'''
+
+"""
 - point1 and point2 are tuples representing the (x, y) coordinates of two points.
 - The function uses the Euclidean distance formula: distance = sqrt((x2 - x1)^2 + (y2 - y1)^2).
-'''
+"""
+
 
 def filter_color(image, lower, upper):
     mask = cv2.inRange(image, lower, upper)
     result = cv2.bitwise_and(image, image, mask=mask)
     return result
 
-'''
+
+"""
 - cv2.inRange(image, lower, upper) creates a binary mask where pixels within the specified color range are set to 1 and others to 0.
 - cv2.bitwise_and(image, image, mask=mask) applies the binary mask to the original image. It keeps only the pixels where the mask 
     is 1, effectively filtering out the colors outside the specified range.
@@ -24,21 +81,18 @@ def filter_color(image, lower, upper):
     interest (purple and green) and create a combined mask (combined_regions) that represents both color regions. The subsequent 
     processing involves converting this combined mask to grayscale and detecting contours, ultimately leading to the identification 
     of objects based on their color characteristics.
-'''
+"""
 
-#169 - rgb(50,143,74) green , rgb(113,32,113) purple
-
-#169_predicted - 
 
 def detect_objects(session_id):
     # Load the image
     image_path = "output_images/enhanced_output/enhanced_final.jpg"
-    #dimensions = (355, 355)
-    
+    # dimensions = (355, 355)
+
     image = cv2.imread(image_path)
-    
-    #image = cv2.resize(image, dimensions)
-    
+
+    # image = cv2.resize(image, dimensions)
+
     # Convert the image to HSV for better color segmentation
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
@@ -111,19 +165,19 @@ def detect_objects(session_id):
 
         # Display the value of min_distance on top of the line
         text_position = ((point_a_min[0] + point_b_min[0]) // 2, (point_a_min[1] + point_b_min[1]) // 2)
-        cv2.putText(image, f"{min_distance:.2f} mm", text_position, cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 3)
-    
+        cv2.putText(image, f"{min_distance:.2f} mm", text_position, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
+        
     # Create the folder if it does not exist
     if not os.path.exists("output_images/distance_output/"):
         os.makedirs("output_images/distance_output/")
-        
-    cv2.imwrite('output_images/distance_output/ouput_with_distance.jpg', image)
-    
+
+    cv2.imwrite("output_images/distance_output/ouput_with_distance.jpg", image)
+
     # Write a temp image for public directory
     # Check first if temp.jpg already exists
-    temp_img_path = '../public/temp-result/temp-' + session_id + '.jpg'
+    temp_img_path = "../public/temp-result/temp-" + session_id + ".jpg"
     if os.path.exists(temp_img_path):
         os.remove(temp_img_path)
     cv2.imwrite(temp_img_path, image)
-    
+
     return min_distance
