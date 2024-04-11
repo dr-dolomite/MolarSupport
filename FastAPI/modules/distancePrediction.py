@@ -3,59 +3,6 @@ import numpy as np
 import os
 
 
-# Function to convert OpenCV BGR image to RGB
-def convert_to_rgb_and_display(image, title):
-    image_contour_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    # Display the images using Matplotlib
-    plt.figure(figsize=(10, 5))
-
-    # Display the contour result
-    plt.imshow(image_contour_rgb)
-    plt.title(title)
-    plt.axis("off")
-    plt.show()
-
-
-# Function to draw an arrow from the text to the point
-def draw_arrow(image, text_position, point_position, color):
-    # Draw the arrow
-    cv2.arrowedLine(
-        image, text_position, point_position, color, thickness=1, tipLength=0.1
-    )
-
-
-# # Function to display a cropped portion of the image centered around the specified point
-# def display_zoomed_image(image, center_x, center_y, zoom_factor, title):
-#     height, width = image.shape[:2]
-
-#     # Calculate the size of the zoomed-in region
-#     zoom_width = int(width * zoom_factor)
-#     zoom_height = int(height * zoom_factor)
-
-#     # Define the top-left corner of the zoomed-in region
-#     x1 = max(0, center_x - zoom_width // 2)
-#     y1 = max(0, center_y - zoom_height // 2)
-
-#     # Define the bottom-right corner of the zoomed-in region
-#     x2 = min(width, center_x + zoom_width // 2)
-#     y2 = min(height, center_y + zoom_height // 2)
-
-#     # Crop the image to the zoomed-in region
-#     zoomed_image = image[y1:y2, x1:x2]
-
-#     # Resize the zoomed-in region to the original size
-#     zoomed_image = cv2.resize(zoomed_image, (width, height))
-
-#     convert_to_rgb_and_display(
-#         zoomed_image, title
-#     )  # convert OpenCV BGR image to RGB and display
-
-#     # Display the zoomed-in image
-#     # cv2.imshow('Zoomed Image', zoomed_image)
-#     # cv2.waitKey(0)
-#     # cv2.destroyAllWindows()
-
-
 # Calculate distance between M3 and MC using Euclidean Distance formula
 def calculate_distance(point1, point2):
     return np.sqrt((point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2)
@@ -108,6 +55,30 @@ def detect_objects(session_id):
     purple_regions = filter_color(hsv, lower_purple, upper_purple)
     green_regions = filter_color(hsv, lower_green, upper_green)
 
+    # --- CHANGE THE GREEN AND PURPLE REGIONS TO ONLY ONE SHADE ---
+
+    # Filter out green regions for pixel replacement
+    green_mask = cv2.inRange(hsv, lower_green, upper_green)
+    green_points = cv2.findNonZero(green_mask)
+
+    # Assign the desired green color to all green points
+    green_color = (16, 119, 26)
+    for point in green_points:
+        x, y = point[0]
+        image[y, x] = green_color
+
+    # Filter out purple regions for pixel replacement
+    purple_mask = cv2.inRange(hsv, lower_purple, upper_purple)
+    purple_points = cv2.findNonZero(purple_mask)
+
+    # Assign the desired purple color to all purple points
+    purple_color = (101, 49, 142)
+    for point in purple_points:
+        x, y = point[0]
+        image[y, x] = purple_color
+
+    # --- CHANGE THE GREEN AND PURPLE REGIONS TO ONLY ONE SHADE ---
+
     # Combine the purple and green regions
     combined_regions = cv2.bitwise_or(purple_regions, green_regions)
 
@@ -116,9 +87,9 @@ def detect_objects(session_id):
 
     # Use a suitable method to detect objects, e.g., using contours
     _, thresh = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-    
+
     contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    
+
     # Sort contours based on the topmost point of each contour
     contours = sorted(contours, key=lambda x: cv2.boundingRect(x)[1])
 
@@ -128,8 +99,23 @@ def detect_objects(session_id):
         points = np.array(contour[:, 0, :])
         object_points.append(points)
 
+    # print("Len:", len(object_points))
+
+    if (
+        len(object_points) > 2
+    ):  # if there are more than 2 detected contours i.e. other teeth, choose the two at the bottom
+        # Get the last two contours
+        last_two_contours = object_points[-2:]
+
+        # Remove the last two contours from object_points
+        object_points = object_points[:-2]
+
+        # Append the last two contours to the beginning of object_points
+        object_points.insert(0, last_two_contours[0])
+        object_points.insert(1, last_two_contours[1])
+
     # Calculate the least Euclidean distance between points of the two objects (this should be the true distance)
-    min_distance = float('inf')
+    min_distance = float("inf")
     point_a_min = None
     point_b_min = None
     # for point_a in object_points[0]:
@@ -151,22 +137,47 @@ def detect_objects(session_id):
     except IndexError as e:
         # print(f"An IndexError occurred: {e}")
         min_distance = 0
-
     # Display information about the detected objects
     min_distance *= 0.15510299643
     # print(min_distance - 2.7) # 8.462783060825256
     # min_distance -= 8.462783060825256
     min_distance = min_distance if min_distance > 0.5 else 0
     min_distance = round(min_distance, 2)
-
     # Draw a blue line connecting the closest points of the two objects
     if point_a_min is not None and point_b_min is not None:
         cv2.line(image, tuple(point_a_min), tuple(point_b_min), (255, 0, 0), 2)
 
         # Display the value of min_distance on top of the line
-        text_position = ((point_a_min[0] + point_b_min[0]) // 2, (point_a_min[1] + point_b_min[1]) // 2)
-        cv2.putText(image, f"{min_distance:.2f} mm", text_position, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
-        
+        text_position = (
+            (point_a_min[0] + point_b_min[0]) // 2,
+            (point_a_min[1] + point_b_min[1]) // 2,
+        )
+        cv2.putText(
+            image,
+            f"{min_distance:.2f} mm",
+            text_position,
+            cv2.FONT_HERSHEY_SIMPLEX,
+            1,
+            (0, 0, 255),
+            3,
+        )
+    else:
+        # If no points found, set distance to 0.0 and display it
+        min_distance = 0.0
+        # Position the text at the center of the image
+        text_position = (image.shape[1] // 2, image.shape[0] // 2)
+
+    # Display the distance on the image
+    cv2.putText(
+        image,
+        f"{min_distance:.2f} mm",
+        text_position,
+        cv2.FONT_HERSHEY_SIMPLEX,
+        1,
+        (0, 0, 255),
+        3,
+    )
+
     # Create the folder if it does not exist
     if not os.path.exists("output_images/distance_output/"):
         os.makedirs("output_images/distance_output/")
