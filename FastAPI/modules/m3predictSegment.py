@@ -10,9 +10,11 @@ from PIL import Image
 def load_model_and_predict(input_image_path):
     # Load the pre-trained model checkpoint
     checkpoint_path = "modules/model_checkpoint/my_checkpoint.pth.tar"
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+    # device = "cuda" if torch.cuda.is_available() else "cpu"
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    print(device)
     model = UNET(in_channels=3, out_channels=1)
-    load_checkpoint(torch.load(checkpoint_path), model)
+    load_checkpoint(torch.load(checkpoint_path, map_location ='cpu'), model)
     model = model.to(device).eval()
 
     # Load and preprocess the input image
